@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoolR — Cooler Intelligence Network</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #050e20;
+      --surface: #0b1628;
+      --surface2: #0f1e36;
+      --border: #1a3055;
+      --accent: #2979ff;
+      --accent2: #00e5ff;
+      --text: #e8f0fe;
+      --text2: #8ab4f8;
+      --text3: #3d6080;
+      --success: #00e676;
+      --warning: #ffab40;
+      --danger: #ff5252;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 16px;
+    }
+
+    .logo-block { flex-shrink: 0; }
+    .logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+    .logo .r { color: var(--accent); }
+    .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+
+    .header-kpis {
+      display: flex;
+      gap: 0;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .kpi {
+      text-align: center;
+      padding: 0 20px;
+      border-right: 1px solid var(--border);
+    }
+    .kpi:first-child { border-left: 1px solid var(--border); }
+
+    .kpi-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .kpi-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1px; }
+    .kpi-delta { font-size: 10px; color: var(--success); margin-top: 1px; }
+
+    .header-status {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: livepulse 2s ease-in-out infinite;
+    }
+
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,230,118,0.5); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,230,118,0); }
+    }
+
+    /* ── MAIN LAYOUT ──────────────────────────────────── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── MAP AREA ─────────────────────────────────────── */
+    .map-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 60%, #081428 0%, #050e20 70%);
+    }
+
+    #map-svg { width: 100%; height: 100%; display: block; }
+
+    /* Map overlay controls */
+    .map-controls {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .filter-btn {
+      background: rgba(11, 22, 40, 0.85);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent2); }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .map-search {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    .search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      color: var(--text3);
+      font-size: 13px;
+      pointer-events: none;
+    }
+    .search-input {
+      background: rgba(11, 22, 40, 0.9);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px 6px 32px;
+      border-radius: 20px;
+      font-size: 12px;
+      width: 220px;
+      outline: none;
+      backdrop-filter: blur(8px);
+      font-family: inherit;
+      transition: border-color 0.2s, width 0.3s;
+    }
+    .search-input:focus { border-color: var(--accent); width: 260px; }
+    .search-input::placeholder { color: var(--text3); }
+
+    /* Search results dropdown */
+    #search-results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+      z-index: 100;
+    }
+    .search-result-item {
+      padding: 8px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .search-result-item:hover { background: var(--surface2); color: var(--text); }
+    .search-result-item .sri-events { margin-left: auto; color: var(--accent2); font-weight: 700; font-size: 11px; }
+
+    /* Map legend */
+    .map-legend {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: rgba(11, 22, 40, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+    .legend-title { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .legend-scale {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-gradient {
+      width: 80px; height: 6px;
+      background: linear-gradient(to right, #0d1a35, #1565c0, #1e88e5);
+      border-radius: 3px;
+    }
+    .legend-labels { display: flex; justify-content: space-between; width: 80px; margin-top: 2px; }
+    .legend-label { font-size: 9px; color: var(--text3); }
+
+    .legend-city-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .legend-city-dot {
+      width: 8px; height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent2);
+    }
+    .legend-city-label { font-size: 9px; color: var(--text3); }
+
+    /* Zoom controls */
+    .zoom-controls {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+    .zoom-btn {
+      width: 28px; height: 28px;
+      background: rgba(11, 22, 40, 0.85);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .zoom-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── SIDEBAR ──────────────────────────────────────── */
+    .sidebar {
+      width: 268px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+    .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sb-section { margin-bottom: 20px; }
+    .sb-section-title {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(26,48,85,0.5);
+    }
+    .stat-row:last-child { border-bottom: none; }
+
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text2);
+    }
+    .stat-icon { font-size: 13px; }
+    .stat-value { font-size: 14px; font-weight: 700; color: var(--text); }
+    .stat-value.danger { color: var(--danger); }
+    .stat-value.warning { color: var(--warning); }
+
+    /* City activity rows */
+    .city-row {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(26,48,85,0.4);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 4px;
+      padding: 7px 6px;
+      margin: 0 -6px;
+    }
+    .city-row:hover { background: rgba(41,121,255,0.06); }
+    .city-row:last-child { border-bottom: none; }
+
+    .city-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .city-name { font-size: 11px; color: var(--text2); }
+    .city-events { font-size: 12px; font-weight: 700; color: var(--accent2); }
+    .city-events span { font-size: 9px; color: var(--text3); font-weight: 400; }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* Brands */
+    .brands-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .brand-tag {
+      background: rgba(41,121,255,0.08);
+      border: 1px solid rgba(41,121,255,0.2);
+      color: var(--text3);
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .last-updated { font-size: 10px; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+
+    /* ── TOOLTIP ──────────────────────────────────────── */
+    #tooltip {
+      position: fixed;
+      background: rgba(11, 22, 40, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0;
+      pointer-events: none;
+      z-index: 2000;
+      backdrop-filter: blur(12px);
+      min-width: 210px;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.15s, transform 0.15s;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(41,121,255,0.1);
+      will-change: transform, opacity;
+    }
+    #tooltip.visible { opacity: 1; transform: scale(1); }
+
+    .tt-header {
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid rgba(26,48,85,0.6);
+    }
+    .tt-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .tt-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tt-badge.high { background: rgba(0,230,118,0.15); color: var(--success); }
+    .tt-badge.medium { background: rgba(41,121,255,0.15); color: var(--accent2); }
+    .tt-badge.low { background: rgba(61,96,128,0.2); color: var(--text3); }
+
+    .tt-body { padding: 10px 14px; }
+    .tt-big {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--accent2);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .tt-big-unit { font-size: 11px; color: var(--text3); font-weight: 400; }
+
+    .tt-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .tt-metric { }
+    .tt-metric-val { font-size: 14px; font-weight: 700; color: var(--text); }
+    .tt-metric-lbl { font-size: 9px; color: var(--text3); }
+
+    .tt-footer {
+      padding: 6px 14px;
+      border-top: 1px solid rgba(26,48,85,0.6);
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    /* ── DETAIL PANEL ─────────────────────────────────── */
+    #detail-panel {
+      position: absolute;
+      top: 0; left: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(11, 22, 40, 0.97);
+      border-right: 1px solid var(--border);
+      z-index: 500;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(16px);
+      padding: 0;
+    }
+    #detail-panel.open { transform: translateX(0); }
+    #detail-panel::-webkit-scrollbar { width: 3px; }
+    #detail-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .panel-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(11, 22, 40, 0.98);
+      backdrop-filter: blur(8px);
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .panel-title { font-size: 18px; font-weight: 800; color: var(--text); }
+    .panel-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    .panel-close {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      width: 24px; height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .panel-close:hover { background: var(--border); color: var(--text); }
+
+    .panel-body { padding: 14px; }
+
+    .panel-kpi {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .panel-kpi-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+    .panel-kpi-value { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .panel-kpi-delta { font-size: 10px; color: var(--success); margin-top: 2px; }
+
+    .mini-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 32px;
+      margin-top: 8px;
+    }
+    .mini-bar {
+      flex: 1;
+      background: var(--accent);
+      border-radius: 2px 2px 0 0;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .mini-bar:last-child { opacity: 1; background: var(--accent2); }
+    .mini-bar:hover { opacity: 0.9; }
+
+    .panel-section-title { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin: 14px 0 8px; }
+
+    .panel-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+    .panel-kpi-sm {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .panel-kpi-sm .panel-kpi-label { font-size: 9px; }
+    .panel-kpi-sm .panel-kpi-value { font-size: 16px; }
+
+    /* ── CITY MODAL ───────────────────────────────────── */
+    #modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5,14,32,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    #modal-overlay.open { display: flex; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0;
+      width: 540px;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      animation: slideUp 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    #modal::-webkit-scrollbar { width: 3px; }
+    #modal::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .modal-header {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      z-index: 1;
+    }
+    .modal-title { font-size: 22px; font-weight: 900; color: var(--text); }
+    .modal-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+    .modal-close {
+      position: absolute;
+      top: 18px; right: 18px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+
+    .modal-body { padding: 20px 22px; }
+
+    .modal-live-card {
+      background: linear-gradient(135deg, rgba(0,229,255,0.07) 0%, rgba(41,121,255,0.07) 100%);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .modal-live-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .modal-live-value { font-size: 56px; font-weight: 900; color: var(--accent2); line-height: 1; }
+    .modal-live-unit { font-size: 13px; color: var(--text3); margin-top: 4px; }
+
+    .modal-sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 50px;
+      margin-top: 14px;
+    }
+    .sp-bar {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+      transition: height 0.5s ease, opacity 0.3s;
+      cursor: pointer;
+    }
+    .sp-bar:hover { opacity: 1 !important; }
+
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+
+    .modal-metric {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .mm-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+    .mm-value { font-size: 18px; font-weight: 800; color: var(--text); }
+
+    .modal-brands { display: flex; flex-wrap: wrap; gap: 6px; }
+    .modal-brand-tag {
+      background: rgba(41,121,255,0.1);
+      border: 1px solid rgba(41,121,255,0.25);
+      color: var(--accent2);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .modal-section-title {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 16px 0 8px;
+    }
+
+    /* ── MAP SVG STYLES ───────────────────────────────── */
+    .country-path {
+      cursor: pointer;
+      transition: fill 0.25s;
+    }
+    .country-path:hover { stroke-width: 1 !important; }
+
+    .city-hit { cursor: pointer; }
+
+    /* ── COUNTRY CONTEXT MENU ─────────────────────────── */
+    #ctx-menu {
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      z-index: 4000;
+      display: none;
+      min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .ctx-item {
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--text2);
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.1s;
+    }
+    .ctx-item:hover { background: var(--surface2); color: var(--text); }
+    .ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-block">
+    <div class="logo">Cool<span class="r">R</span></div>
+    <div class="logo-sub">Smarter Data · Better Execution</div>
+  </div>
+
+  <div class="header-kpis">
+    <div class="kpi">
+      <div class="kpi-val" id="hkpi-coolers">15,842</div>
+      <div class="kpi-label">Connected Coolers</div>
+      <div class="kpi-delta">▲ 142 today</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="hkpi-stores">5,231</div>
+      <div class="kpi-label">Stores</div>
+      <div class="kpi-delta">▲ 37 today</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">128</div>
+      <div class="kpi-label">Retailers</div>
+      <div class="kpi-delta">▲ 3 today</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">450</div>
+      <div class="kpi-label">Brands</div>
+      <div class="kpi-delta">▲ 12 today</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="hkpi-images">3.6M</div>
+      <div class="kpi-label">Images / Day</div>
+      <div class="kpi-delta">▲ 286K today</div>
+    </div>
+  </div>
+
+  <div class="header-status">
+    <div class="live-dot"></div>
+    <span id="live-label">Live · updated <span id="update-age">0s</span> ago</span>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- MAP AREA -->
+  <div class="map-area" id="map-area">
+
+    <!-- Filter buttons -->
+    <div class="map-controls">
+      <button class="filter-btn active" data-region="world">🌍 World</button>
+      <button class="filter-btn" data-region="americas">🌎 Americas</button>
+      <button class="filter-btn" data-region="europe">🇪🇺 Europe</button>
+      <button class="filter-btn" data-region="apac">🌏 APAC</button>
+    </div>
+
+    <!-- Search -->
+    <div class="map-search">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search city or country…" autocomplete="off">
+        <div id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- D3 Map SVG -->
+    <svg id="map-svg"></svg>
+
+    <!-- Detail panel (country) -->
+    <div id="detail-panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title" id="panel-title">Country</div>
+          <div class="panel-sub" id="panel-sub">Region details</div>
+        </div>
+        <button class="panel-close" id="panel-close">✕</button>
+      </div>
+      <div class="panel-body" id="panel-body"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <div class="legend-title">Cooler Density</div>
+      <div class="legend-scale">
+        <div>
+          <div class="legend-gradient"></div>
+          <div class="legend-labels">
+            <span class="legend-label">Low</span>
+            <span class="legend-label">High</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend-city-row">
+        <div class="legend-city-dot"></div>
+        <div class="legend-city-label">Active city (size = activity)</div>
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-in">+</button>
+      <button class="zoom-btn" id="zoom-out">−</button>
+      <button class="zoom-btn" id="zoom-reset" title="Reset view" style="font-size:11px;">⌂</button>
+    </div>
+
+  </div><!-- /map-area -->
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-scroll">
+
+      <div class="sb-section">
+        <div class="sb-section-title">Network at a Glance</div>
+        <div class="stat-row">
+          <div class="stat-label"><span class="stat-icon">📡</span> Active Coolers</div>
+          <div class="stat-value" id="sb-coolers">15,689</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span class="stat-icon">📸</span> Images Today</div>
+          <div class="stat-value" id="sb-images">3.6M</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span class="stat-icon">🚪</span> Door Opens</div>
+          <div class="stat-value" id="sb-doors">412,587</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span class="stat-icon">🌡</span> Temp Alerts</div>
+          <div class="stat-value warning" id="sb-temp">29</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span class="stat-icon">📦</span> Out-of-Stock</div>
+          <div class="stat-value danger" id="sb-oos">1,735</div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-title">Top Cities · Events/min</div>
+        <div id="city-list"></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-title">Trusted Brands</div>
+        <div class="brands-grid" id="brands-list"></div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+
+    <div class="sidebar-footer">
+      <div class="last-updated">
+        <div class="live-dot" style="width:6px;height:6px;"></div>
+        <span id="sb-last-updated">Just now</span>
+      </div>
+      <div style="font-size:9px;color:var(--text3);">CoolR © 2026</div>
+    </div>
+  </div><!-- /sidebar -->
+
+</div><!-- /layout -->
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div class="tt-header">
+    <div class="tt-title">
+      <span id="tt-title-text"></span>
+      <span class="tt-badge" id="tt-badge"></span>
+    </div>
+  </div>
+  <div class="tt-body">
+    <div id="tt-big-wrap" style="display:none">
+      <div class="tt-big" id="tt-big"></div>
+      <div class="tt-big-unit" id="tt-big-unit"></div>
+    </div>
+    <div class="tt-metrics" id="tt-metrics"></div>
+  </div>
+  <div class="tt-footer" id="tt-footer">Click to see detailed breakdown →</div>
+</div>
+
+<!-- CITY MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-sub" id="modal-sub"></div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" id="ctx-details">🔍 View Details</div>
+  <div class="ctx-item" id="ctx-zoom">🔭 Zoom to Region</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-copy">📋 Copy Stats</div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const BRANDS = ["Coca-Cola", "Pepsi", "Red Bull", "Monster", "Danone",
+  "Carrefour", "Tesco", "Ahold Delhaize", "7-Eleven", "Circle K"];
+
+const CITIES = [
+  {
+    id: "chicago", name: "Chicago, IL", country: "United States",
+    lat: 41.8781, lng: -87.6298, eventsPerMin: 337,
+    coolers: 1243, stores: 89, retailers: 12,
+    outOfStock: 234, tempAlerts: 3, doorOpens: 52341, imagesPerHour: 124500,
+    brands: ["Coca-Cola", "Pepsi", "Red Bull"],
+    history: [280, 295, 310, 325, 337, 330, 315, 340, 328, 337, 342, 337],
+  },
+  {
+    id: "dallas", name: "Dallas, TX", country: "United States",
+    lat: 32.7767, lng: -96.797, eventsPerMin: 284,
+    coolers: 987, stores: 72, retailers: 8,
+    outOfStock: 178, tempAlerts: 5, doorOpens: 43210, imagesPerHour: 98200,
+    brands: ["Pepsi", "Monster", "Danone"],
+    history: [240, 255, 265, 270, 284, 278, 290, 284, 275, 284, 291, 284],
+  },
+  {
+    id: "phoenix", name: "Phoenix, AZ", country: "United States",
+    lat: 33.4484, lng: -112.074, eventsPerMin: 143,
+    coolers: 521, stores: 41, retailers: 6,
+    outOfStock: 89, tempAlerts: 2, doorOpens: 21890, imagesPerHour: 52300,
+    brands: ["Coca-Cola", "Red Bull"],
+    history: [120, 125, 130, 138, 143, 140, 145, 143, 139, 143, 147, 143],
+  },
+  {
+    id: "london", name: "London, UK", country: "United Kingdom",
+    lat: 51.5074, lng: -0.1278, eventsPerMin: 256,
+    coolers: 891, stores: 63, retailers: 9,
+    outOfStock: 145, tempAlerts: 4, doorOpens: 38940, imagesPerHour: 89100,
+    brands: ["Coca-Cola", "Red Bull", "Tesco"],
+    history: [210, 220, 235, 248, 256, 250, 260, 256, 248, 256, 262, 256],
+  },
+  {
+    id: "amsterdam", name: "Amsterdam, NL", country: "Netherlands",
+    lat: 52.3676, lng: 4.9041, eventsPerMin: 112,
+    coolers: 423, stores: 31, retailers: 5,
+    outOfStock: 67, tempAlerts: 1, doorOpens: 16780, imagesPerHour: 43200,
+    brands: ["Pepsi", "Danone"],
+    history: [90, 95, 100, 108, 112, 109, 115, 112, 107, 112, 116, 112],
+  },
+  {
+    id: "paris", name: "Paris, FR", country: "France",
+    lat: 48.8566, lng: 2.3522, eventsPerMin: 98,
+    coolers: 387, stores: 28, retailers: 4,
+    outOfStock: 54, tempAlerts: 0, doorOpens: 14320, imagesPerHour: 38100,
+    brands: ["Danone", "Carrefour"],
+    history: [80, 85, 90, 95, 98, 95, 100, 98, 94, 98, 102, 98],
+  },
+  {
+    id: "toronto", name: "Toronto, CA", country: "Canada",
+    lat: 43.6532, lng: -79.3832, eventsPerMin: 89,
+    coolers: 312, stores: 24, retailers: 4,
+    outOfStock: 42, tempAlerts: 1, doorOpens: 11230, imagesPerHour: 32100,
+    brands: ["Coca-Cola", "Pepsi"],
+    history: [70, 75, 80, 85, 89, 86, 91, 89, 84, 89, 92, 89],
+  },
+  {
+    id: "sydney", name: "Sydney, AU", country: "Australia",
+    lat: -33.8688, lng: 151.2093, eventsPerMin: 67,
+    coolers: 234, stores: 18, retailers: 3,
+    outOfStock: 31, tempAlerts: 2, doorOpens: 8920, imagesPerHour: 24300,
+    brands: ["Coca-Cola", "Red Bull"],
+    history: [55, 58, 62, 65, 67, 65, 69, 67, 63, 67, 70, 67],
+  },
+  {
+    id: "tokyo", name: "Tokyo, JP", country: "Japan",
+    lat: 35.6762, lng: 139.6503, eventsPerMin: 78,
+    coolers: 289, stores: 22, retailers: 3,
+    outOfStock: 38, tempAlerts: 0, doorOpens: 10120, imagesPerHour: 28900,
+    brands: ["Coca-Cola", "Monster"],
+    history: [62, 66, 71, 75, 78, 76, 80, 78, 73, 78, 81, 78],
+  },
+  {
+    id: "dubai", name: "Dubai, UAE", country: "UAE",
+    lat: 25.2048, lng: 55.2708, eventsPerMin: 54,
+    coolers: 198, stores: 14, retailers: 2,
+    outOfStock: 22, tempAlerts: 3, doorOpens: 7400, imagesPerHour: 19800,
+    brands: ["Pepsi", "Red Bull"],
+    history: [42, 46, 50, 53, 54, 52, 56, 54, 51, 54, 57, 54],
+  },
+];
+
+// ISO 3166-1 numeric country IDs mapped to data
+const COUNTRIES = {
+  840: { name: "United States",   coolers: 8500,  stores: 2800, activity: 0.92, growth: "+8.2%",  region: "americas" },
+  826: { name: "United Kingdom",  coolers: 1200,  stores: 380,  activity: 0.66, growth: "+5.1%",  region: "europe"   },
+  250: { name: "France",          coolers: 580,   stores: 190,  activity: 0.47, growth: "+3.8%",  region: "europe"   },
+  276: { name: "Germany",         coolers: 720,   stores: 240,  activity: 0.52, growth: "+4.2%",  region: "europe"   },
+  528: { name: "Netherlands",     coolers: 430,   stores: 140,  activity: 0.41, growth: "+6.1%",  region: "europe"   },
+  124: { name: "Canada",          coolers: 980,   stores: 320,  activity: 0.57, growth: "+7.3%",  region: "americas" },
+  484: { name: "Mexico",          coolers: 650,   stores: 210,  activity: 0.46, growth: "+12.4%", region: "americas" },
+  76:  { name: "Brazil",          coolers: 420,   stores: 135,  activity: 0.36, growth: "+15.2%", region: "americas" },
+  36:  { name: "Australia",       coolers: 340,   stores: 108,  activity: 0.31, growth: "+4.9%",  region: "apac"     },
+  392: { name: "Japan",           coolers: 380,   stores: 122,  activity: 0.37, growth: "+2.1%",  region: "apac"     },
+  156: { name: "China",           coolers: 890,   stores: 290,  activity: 0.52, growth: "+18.7%", region: "apac"     },
+  356: { name: "India",           coolers: 320,   stores: 100,  activity: 0.29, growth: "+22.3%", region: "apac"     },
+  410: { name: "South Korea",     coolers: 290,   stores: 92,   activity: 0.31, growth: "+8.9%",  region: "apac"     },
+  724: { name: "Spain",           coolers: 410,   stores: 132,  activity: 0.39, growth: "+5.6%",  region: "europe"   },
+  380: { name: "Italy",           coolers: 380,   stores: 122,  activity: 0.36, growth: "+4.1%",  region: "europe"   },
+  792: { name: "Turkey",          coolers: 210,   stores: 68,   activity: 0.26, growth: "+9.8%",  region: "europe"   },
+  616: { name: "Poland",          coolers: 180,   stores: 58,   activity: 0.23, growth: "+6.3%",  region: "europe"   },
+  752: { name: "Sweden",          coolers: 160,   stores: 52,   activity: 0.21, growth: "+3.7%",  region: "europe"   },
+  56:  { name: "Belgium",         coolers: 140,   stores: 45,   activity: 0.20, growth: "+4.4%",  region: "europe"   },
+  756: { name: "Switzerland",     coolers: 120,   stores: 38,   activity: 0.19, growth: "+2.9%",  region: "europe"   },
+  710: { name: "South Africa",    coolers: 95,    stores: 30,   activity: 0.16, growth: "+11.2%", region: "apac"     },
+  784: { name: "UAE",             coolers: 210,   stores: 68,   activity: 0.28, growth: "+16.8%", region: "apac"     },
+  682: { name: "Saudi Arabia",    coolers: 180,   stores: 58,   activity: 0.26, growth: "+14.5%", region: "apac"     },
+  643: { name: "Russia",          coolers: 320,   stores: 103,  activity: 0.31, growth: "+1.2%",  region: "europe"   },
+  246: { name: "Finland",         coolers: 90,    stores: 29,   activity: 0.16, growth: "+3.1%",  region: "europe"   },
+  578: { name: "Norway",          coolers: 85,    stores: 27,   activity: 0.15, growth: "+2.8%",  region: "europe"   },
+  208: { name: "Denmark",         coolers: 100,   stores: 32,   activity: 0.17, growth: "+3.5%",  region: "europe"   },
+  40:  { name: "Austria",         coolers: 130,   stores: 42,   activity: 0.20, growth: "+3.2%",  region: "europe"   },
+  620: { name: "Portugal",        coolers: 110,   stores: 35,   activity: 0.18, growth: "+5.4%",  region: "europe"   },
+  554: { name: "New Zealand",     coolers: 65,    stores: 21,   activity: 0.12, growth: "+4.2%",  region: "apac"     },
+  702: { name: "Singapore",       coolers: 88,    stores: 28,   activity: 0.22, growth: "+9.1%",  region: "apac"     },
+  458: { name: "Malaysia",        coolers: 72,    stores: 23,   activity: 0.18, growth: "+11.4%", region: "apac"     },
+  764: { name: "Thailand",        coolers: 68,    stores: 22,   activity: 0.17, growth: "+13.2%", region: "apac"     },
+};
+
+// Live state (mutates in place)
+const LIVE = {
+  doorOpens:     412587,
+  tempAlerts:    29,
+  outOfStock:    1735,
+  activeCoolers: 15689,
+  connectedCoolers: 15842,
+  stores:        5231,
+  cityEvents:    Object.fromEntries(CITIES.map(c => [c.id, c.eventsPerMin])),
+};
+
+// ============================================================
+// REGION ZOOM PARAMS
+// ============================================================
+
+const REGION_VIEWS = {
+  world:    { scale: null, center: [0, 15] },         // scale computed from width
+  americas: { scale: 0.38, center: [-80, 10] },
+  europe:   { scale: 0.65, center: [12, 50] },
+  apac:     { scale: 0.40, center: [115, 12] },
+};
+
+// ============================================================
+// D3 SETUP
+// ============================================================
+
+const mapEl   = document.getElementById('map-area');
+const svgEl   = document.getElementById('map-svg');
+const W       = mapEl.clientWidth;
+const H       = mapEl.clientHeight;
+const baseScale = W / 6.3;
+
+const svg = d3.select('#map-svg').attr('width', W).attr('height', H);
+
+// Defs for glow and gradient
+const defs = svg.append('defs');
+const glowFilter = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
+glowFilter.append('feGaussianBlur').attr('stdDeviation', '3.5').attr('result', 'coloredBlur');
+const feMerge = glowFilter.append('feMerge');
+feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+// Subtle glow for countries
+const countryGlow = defs.append('filter').attr('id', 'country-glow');
+countryGlow.append('feGaussianBlur').attr('stdDeviation', '2').attr('result', 'b');
+const cm = countryGlow.append('feMerge');
+cm.append('feMergeNode').attr('in', 'b');
+cm.append('feMergeNode').attr('in', 'SourceGraphic');
+
+const projection = d3.geoMercator()
+  .scale(baseScale)
+  .center([0, 15])
+  .translate([W / 2, H / 2]);
+
+const pathGen = d3.geoPath().projection(projection);
+
+const colorScale = d3.scaleLinear()
+  .domain([0, 0.25, 0.5, 0.75, 1])
+  .range(['#061020', '#0a1e40', '#0d3070', '#1565c0', '#1e88e5']);
+
+// Main zoom group
+const mapG = svg.append('g').attr('class', 'map-root');
+
+// Zoom behavior
+const zoomBehavior = d3.zoom()
+  .scaleExtent([0.8, 12])
+  .on('zoom', event => {
+    mapG.attr('transform', event.transform);
+    // Scale city dots inversely so they don't grow too big
+    const k = event.transform.k;
+    mapG.selectAll('.city-core').attr('r', d => dotRadius(d) / Math.sqrt(k));
+    mapG.selectAll('.city-ring').attr('r', d => (dotRadius(d) + 5) / Math.sqrt(k));
+  });
+
+svg.call(zoomBehavior);
+svg.on('dblclick.zoom', null); // Prevent double-click zoom (we handle it)
+
+function dotRadius(city) {
+  return 4 + (LIVE.cityEvents[city.id] / 337) * 8;
+}
+
+// ============================================================
+// MAP RENDER
+// ============================================================
+
+async function initMap() {
+  let world;
+  try {
+    world = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+  } catch (e) {
+    console.error('Failed to load world-atlas:', e);
+    return;
+  }
+
+  const countries = topojson.feature(world, world.objects.countries);
+  const borders   = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+
+  // Ocean
+  mapG.append('path')
+    .datum({ type: 'Sphere' })
+    .attr('d', pathGen)
+    .attr('fill', '#050e20');
+
+  // Graticule (grid lines)
+  mapG.append('path')
+    .datum(d3.geoGraticule().step([30, 30])())
+    .attr('d', pathGen)
+    .attr('fill', 'none')
+    .attr('stroke', 'rgba(26,48,85,0.25)')
+    .attr('stroke-width', 0.5);
+
+  // Countries
+  mapG.selectAll('.country-path')
+    .data(countries.features)
+    .enter()
+    .append('path')
+    .attr('class', 'country-path')
+    .attr('d', pathGen)
+    .attr('fill', d => {
+      const c = COUNTRIES[+d.id];
+      return c ? colorScale(c.activity) : '#070f22';
+    })
+    .attr('stroke', '#1a3055')
+    .attr('stroke-width', 0.4)
+    .on('mouseenter', onCountryEnter)
+    .on('mousemove', onMouseMove)
+    .on('mouseleave', onCountryLeave)
+    .on('click', onCountryClick)
+    .on('contextmenu', onCountryRightClick);
+
+  // Country borders overlay
+  mapG.append('path')
+    .datum(borders)
+    .attr('fill', 'none')
+    .attr('stroke', 'rgba(26,48,85,0.5)')
+    .attr('stroke-width', 0.3)
+    .attr('d', pathGen);
+
+  // City markers
+  const cityG = mapG.append('g').attr('class', 'cities');
+
+  CITIES.forEach(city => {
+    const [x, y] = projection([city.lng, city.lat]);
+
+    const g = cityG.append('g')
+      .datum(city)
+      .attr('class', 'city-group')
+      .attr('transform', `translate(${x},${y})`);
+
+    // Outer animated ring
+    const ring = g.append('circle')
+      .datum(city)
+      .attr('class', 'city-ring')
+      .attr('r', dotRadius(city) + 5)
+      .attr('fill', 'none')
+      .attr('stroke', '#00e5ff')
+      .attr('stroke-width', 1)
+      .attr('opacity', 0);
+
+    // Pulse animation
+    function pulse() {
+      ring
+        .attr('r', dotRadius(city) + 2)
+        .attr('opacity', 0.8)
+        .transition()
+        .duration(2200)
+        .ease(d3.easeQuadOut)
+        .attr('r', dotRadius(city) + 22)
+        .attr('opacity', 0)
+        .on('end', pulse);
+    }
+    // Stagger starts
+    setTimeout(pulse, Math.random() * 2000);
+
+    // Core dot
+    g.append('circle')
+      .datum(city)
+      .attr('class', 'city-core')
+      .attr('r', dotRadius(city))
+      .attr('fill', '#00e5ff')
+      .attr('opacity', 0.92)
+      .attr('filter', 'url(#glow)');
+
+    // Invisible hit area
+    g.append('circle')
+      .attr('r', 22)
+      .attr('fill', 'transparent')
+      .attr('class', 'city-hit')
+      .on('mouseenter', (event) => onCityEnter(event, city))
+      .on('mousemove', onMouseMove)
+      .on('mouseleave', onHoverEnd)
+      .on('click', (event) => { event.stopPropagation(); openCityModal(city); });
+  });
+
+  // Click on map background = close panels
+  svg.on('click', () => closeDetailPanel());
+
+  populateSidebar();
+  startLiveUpdates();
+}
+
+// ============================================================
+// TOOLTIP
+// ============================================================
+
+const ttEl       = document.getElementById('tooltip');
+const ttTitle    = document.getElementById('tt-title-text');
+const ttBadge    = document.getElementById('tt-badge');
+const ttBigWrap  = document.getElementById('tt-big-wrap');
+const ttBig      = document.getElementById('tt-big');
+const ttBigUnit  = document.getElementById('tt-big-unit');
+const ttMetrics  = document.getElementById('tt-metrics');
+const ttFooter   = document.getElementById('tt-footer');
+
+let ttVisible = false;
+
+function showTooltip() {
+  ttEl.classList.add('visible');
+  ttVisible = true;
+}
+
+function hideTooltip() {
+  ttEl.classList.remove('visible');
+  ttVisible = false;
+}
+
+function positionTooltip(event) {
+  const x = event.clientX, y = event.clientY;
+  const tw = ttEl.offsetWidth, th = ttEl.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = x + 18, top = y - th / 2;
+  if (left + tw > vw - 10) left = x - tw - 18;
+  if (top < 8) top = 8;
+  if (top + th > vh - 8) top = vh - th - 8;
+  ttEl.style.left = left + 'px';
+  ttEl.style.top  = top  + 'px';
+}
+
+function onMouseMove(event) {
+  if (ttVisible) positionTooltip(event);
+}
+
+function onHoverEnd() {
+  hideTooltip();
+}
+
+function badgeClass(activity) {
+  return activity > 0.6 ? 'high' : activity > 0.35 ? 'medium' : 'low';
+}
+function badgeLabel(activity) {
+  return activity > 0.6 ? 'High' : activity > 0.35 ? 'Active' : 'Low';
+}
+function activityColor(activity) {
+  return activity > 0.6 ? 'var(--success)' : activity > 0.35 ? 'var(--accent2)' : 'var(--text3)';
+}
+
+function onCountryEnter(event, d) {
+  const c = COUNTRIES[+d.id];
+  if (!c) return;
+
+  // Highlight
+  d3.select(event.currentTarget)
+    .attr('fill', d3.color(colorScale(c.activity)).brighter(0.8).formatHex())
+    .attr('stroke', 'var(--accent2)')
+    .attr('stroke-width', 1);
+
+  ttTitle.textContent = c.name;
+  ttBadge.textContent = badgeLabel(c.activity);
+  ttBadge.className = `tt-badge ${badgeClass(c.activity)}`;
+  ttBigWrap.style.display = 'none';
+
+  ttMetrics.innerHTML = `
+    <div class="tt-metric"><div class="tt-metric-val">${c.coolers.toLocaleString()}</div><div class="tt-metric-lbl">Coolers</div></div>
+    <div class="tt-metric"><div class="tt-metric-val">${c.stores.toLocaleString()}</div><div class="tt-metric-lbl">Stores</div></div>
+    <div class="tt-metric" style="grid-column:span 2">
+      <div class="tt-metric-val" style="color:var(--success)">${c.growth}</div>
+      <div class="tt-metric-lbl">Year-over-Year Growth</div>
+    </div>
+  `;
+  ttFooter.textContent = 'Click for full breakdown →';
+
+  showTooltip();
+  positionTooltip(event);
+}
+
+function onCountryLeave(event, d) {
+  const c = COUNTRIES[+d.id];
+  d3.select(event.currentTarget)
+    .attr('fill', c ? colorScale(c.activity) : '#070f22')
+    .attr('stroke', '#1a3055')
+    .attr('stroke-width', 0.4);
+  hideTooltip();
+}
+
+function onCityEnter(event, city) {
+  ttTitle.textContent = '📍 ' + city.name;
+  ttBadge.textContent = 'Live';
+  ttBadge.className = 'tt-badge high';
+  ttBigWrap.style.display = 'block';
+  ttBig.textContent = LIVE.cityEvents[city.id];
+  ttBigUnit.textContent = 'events per minute';
+  ttMetrics.innerHTML = `
+    <div class="tt-metric"><div class="tt-metric-val">${city.coolers.toLocaleString()}</div><div class="tt-metric-lbl">Active Coolers</div></div>
+    <div class="tt-metric"><div class="tt-metric-val">${city.stores}</div><div class="tt-metric-lbl">Stores</div></div>
+    <div class="tt-metric"><div class="tt-metric-val" style="color:var(--danger)">${city.outOfStock}</div><div class="tt-metric-lbl">Out-of-Stock</div></div>
+    <div class="tt-metric"><div class="tt-metric-val" style="color:var(--warning)">${city.tempAlerts}</div><div class="tt-metric-lbl">Temp Alerts</div></div>
+  `;
+  ttFooter.textContent = 'Click for full city report →';
+  showTooltip();
+  positionTooltip(event);
+}
+
+// ============================================================
+// COUNTRY DETAIL PANEL
+// ============================================================
+
+let ctxCountryData = null;
+
+function onCountryClick(event, d) {
+  const c = COUNTRIES[+d.id];
+  if (!c) return;
+  event.stopPropagation();
+  ctxCountryData = c;
+  openDetailPanel(c);
+}
+
+function openDetailPanel(c) {
+  document.getElementById('panel-title').textContent = c.name;
+  document.getElementById('panel-sub').textContent = `${c.region.toUpperCase()} · ${badgeLabel(c.activity)} Activity`;
+
+  const bars = Array.from({ length: 12 }, () =>
+    Math.round(c.activity * 100 + (Math.random() - 0.5) * 20)
+  );
+  const maxBar = Math.max(...bars);
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-kpi">
+      <div class="panel-kpi-label">Connected Coolers</div>
+      <div class="panel-kpi-value">${c.coolers.toLocaleString()}</div>
+      <div class="panel-kpi-delta">▲ ${c.growth} year-over-year</div>
+      <div class="mini-bars">
+        ${bars.map(h => `<div class="mini-bar" style="height:${Math.round(h / maxBar * 100)}%"></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="panel-section-title">Coverage</div>
+    <div class="panel-kpi-grid">
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Stores</div>
+        <div class="panel-kpi-value">${c.stores.toLocaleString()}</div>
+      </div>
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Retailers</div>
+        <div class="panel-kpi-value">${Math.round(c.stores * 0.12)}</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title">Today's Activity</div>
+    <div class="panel-kpi-grid">
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Images</div>
+        <div class="panel-kpi-value">${(Math.round(c.coolers * 228) / 1000).toFixed(0)}K</div>
+      </div>
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Door Opens</div>
+        <div class="panel-kpi-value">${Math.round(c.coolers * 26).toLocaleString()}</div>
+      </div>
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Out-of-Stock</div>
+        <div class="panel-kpi-value" style="color:var(--danger)">${Math.round(c.coolers * 0.08)}</div>
+      </div>
+      <div class="panel-kpi-sm">
+        <div class="panel-kpi-label">Temp Alerts</div>
+        <div class="panel-kpi-value" style="color:var(--warning)">${Math.round(c.coolers * 0.003)}</div>
+      </div>
+    </div>
+
+    <div class="panel-section-title">Uptime</div>
+    <div class="panel-kpi">
+      <div class="panel-kpi-label">Network Uptime (30d)</div>
+      <div class="panel-kpi-value">${(99 - (1 - c.activity) * 2).toFixed(2)}%</div>
+      <div class="panel-kpi-delta">▲ Above SLA threshold</div>
+    </div>
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetailPanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+document.getElementById('panel-close').addEventListener('click', e => {
+  e.stopPropagation();
+  closeDetailPanel();
+});
+
+// ============================================================
+// CITY MODAL
+// ============================================================
+
+function openCityModal(city) {
+  document.getElementById('modal-title').textContent = '📍 ' + city.name;
+  document.getElementById('modal-sub').textContent = city.country + ' · Real-time Intelligence Dashboard';
+
+  const hist  = city.history;
+  const maxH  = Math.max(...hist);
+  const liveEv = LIVE.cityEvents[city.id];
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-live-card">
+      <div class="modal-live-label">Live Events per Minute</div>
+      <div class="modal-live-value" id="modal-live-val">${liveEv}</div>
+      <div class="modal-live-unit">events / min</div>
+      <div class="modal-sparkline" id="modal-sparkline">
+        ${hist.map((v, i) => `
+          <div class="sp-bar" title="${v} ev/min"
+            style="height:${Math.round(v/maxH*100)}%;
+                   background:${i === hist.length-1 ? 'var(--accent2)' : 'var(--accent)'};
+                   opacity:${i === hist.length-1 ? 1 : 0.45 + i*0.04}">
+          </div>`).join('')}
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-top:6px;">Last 12 readings (most recent →)</div>
+    </div>
+
+    <div class="modal-grid">
+      <div class="modal-metric"><div class="mm-label">Coolers</div><div class="mm-value">${city.coolers.toLocaleString()}</div></div>
+      <div class="modal-metric"><div class="mm-label">Stores</div><div class="mm-value">${city.stores}</div></div>
+      <div class="modal-metric"><div class="mm-label">Retailers</div><div class="mm-value">${city.retailers}</div></div>
+      <div class="modal-metric"><div class="mm-label">Door Opens</div><div class="mm-value">${city.doorOpens.toLocaleString()}</div></div>
+      <div class="modal-metric"><div class="mm-label">Images / hr</div><div class="mm-value">${(city.imagesPerHour/1000).toFixed(1)}K</div></div>
+      <div class="modal-metric"><div class="mm-label">Region Rank</div><div class="mm-value">#${rankCity(city.id)}</div></div>
+      <div class="modal-metric"><div class="mm-label">Out-of-Stock</div><div class="mm-value" style="color:var(--danger)">${city.outOfStock}</div></div>
+      <div class="modal-metric"><div class="mm-label">Temp Alerts</div><div class="mm-value" style="color:var(--warning)">${city.tempAlerts}</div></div>
+      <div class="modal-metric"><div class="mm-label">Compliance</div><div class="mm-value" style="color:var(--success)">98.7%</div></div>
+    </div>
+
+    <div class="modal-section-title">Top Brands in this City</div>
+    <div class="modal-brands">
+      ${city.brands.map(b => `<span class="modal-brand-tag">${b}</span>`).join('')}
+    </div>
+
+    <div class="modal-section-title">Performance vs. Network Average</div>
+    ${perfBars(city)}
+  `;
+
+  document.getElementById('modal-overlay').classList.add('open');
+
+  // Animate live value in modal
+  const liveValEl = document.getElementById('modal-live-val');
+  const modalInterval = setInterval(() => {
+    if (!document.getElementById('modal-overlay').classList.contains('open')) {
+      clearInterval(modalInterval);
+      return;
+    }
+    const drift = Math.round((Math.random() - 0.5) * 8);
+    const cur = parseInt(liveValEl.textContent);
+    liveValEl.textContent = Math.max(1, cur + drift);
+  }, 1200);
+}
+
+function rankCity(id) {
+  const sorted = [...CITIES].sort((a, b) => b.eventsPerMin - a.eventsPerMin);
+  return sorted.findIndex(c => c.id === id) + 1;
+}
+
+function perfBars(city) {
+  const netAvg = Math.round(CITIES.reduce((s, c) => s + c.eventsPerMin, 0) / CITIES.length);
+  const metrics = [
+    { label: 'Events/min', city: city.eventsPerMin, avg: netAvg, max: 337 },
+    { label: 'Coolers', city: city.coolers, avg: Math.round(CITIES.reduce((s,c)=>s+c.coolers,0)/CITIES.length), max: 1243 },
+    { label: 'Stores', city: city.stores, avg: Math.round(CITIES.reduce((s,c)=>s+c.stores,0)/CITIES.length), max: 89 },
+  ];
+  return metrics.map(m => `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
+        <span>${m.label}</span><span style="color:var(--text2)">${m.city.toLocaleString()} <span style="color:var(--text3)">vs avg ${m.avg}</span></span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;position:relative;">
+        <div style="position:absolute;left:0;top:0;height:100%;background:var(--accent);width:${Math.round(m.city/m.max*100)}%;border-radius:3px;"></div>
+        <div style="position:absolute;top:-2px;height:10px;width:2px;background:var(--text3);left:${Math.round(m.avg/m.max*100)}%;border-radius:1px;" title="Network average"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+});
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open');
+});
+
+// ============================================================
+// CONTEXT MENU (right-click on country)
+// ============================================================
+
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTarget = null;
+
+function onCountryRightClick(event, d) {
+  event.preventDefault();
+  event.stopPropagation();
+  const c = COUNTRIES[+d.id];
+  if (!c) return;
+  ctxTarget = { c, d };
+  ctxMenu.style.display = 'block';
+  ctxMenu.style.left = event.clientX + 'px';
+  ctxMenu.style.top  = event.clientY + 'px';
+}
+
+document.getElementById('ctx-details').addEventListener('click', () => {
+  if (ctxTarget) openDetailPanel(ctxTarget.c);
+  ctxMenu.style.display = 'none';
+});
+
+document.getElementById('ctx-zoom').addEventListener('click', () => {
+  if (ctxTarget) zoomToCountry(ctxTarget.d);
+  ctxMenu.style.display = 'none';
+});
+
+document.getElementById('ctx-copy').addEventListener('click', () => {
+  if (ctxTarget) {
+    const c = ctxTarget.c;
+    const text = `${c.name}: ${c.coolers} coolers, ${c.stores} stores, growth ${c.growth}`;
+    navigator.clipboard?.writeText(text).catch(() => {});
+  }
+  ctxMenu.style.display = 'none';
+});
+
+document.addEventListener('click', () => { ctxMenu.style.display = 'none'; });
+
+function zoomToCountry(d) {
+  const bounds = pathGen.bounds(d);
+  const [[x0, y0], [x1, y1]] = bounds;
+  const bW = x1 - x0, bH = y1 - y0;
+  const scale = Math.min(8, 0.85 / Math.max(bW / W, bH / H));
+  const tx = W / 2 - scale * (x0 + bW / 2);
+  const ty = H / 2 - scale * (y0 + bH / 2);
+
+  svg.transition().duration(750).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity.translate(tx, ty).scale(scale)
+  );
+}
+
+// ============================================================
+// FILTER BUTTONS / ZOOM TO REGION
+// ============================================================
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    zoomToRegion(btn.dataset.region);
+  });
+});
+
+function zoomToRegion(region) {
+  const params = REGION_VIEWS[region];
+  if (!params) return;
+
+  let scale, tx, ty;
+
+  if (region === 'world') {
+    scale = 1;
+    tx = 0; ty = 0;
+    svg.transition().duration(800).call(
+      zoomBehavior.transform,
+      d3.zoomIdentity
+    );
+    return;
+  }
+
+  const [lng, lat] = params.center;
+  const [px, py] = projection([lng, lat]);
+  scale = Math.round(baseScale * params.scale * (W / 800));
+  // compute what zoom level matches this visual scale
+  const k = (baseScale * params.scale * 6.3);
+  tx = W / 2 - k * px / baseScale;
+  ty = H / 2 - k * py / baseScale;
+
+  // Simpler: compute pixel coords at current projection, zoom to them
+  const kFactor = params.scale * (W / 130);
+  svg.transition().duration(800).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity
+      .translate(W / 2, H / 2)
+      .scale(kFactor)
+      .translate(-projection([lng, lat])[0], -projection([lng, lat])[1])
+  );
+}
+
+// Manual zoom buttons
+document.getElementById('zoom-in').addEventListener('click', () => {
+  svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
+});
+document.getElementById('zoom-out').addEventListener('click', () => {
+  svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.67);
+});
+document.getElementById('zoom-reset').addEventListener('click', () => {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-region="world"]').classList.add('active');
+  svg.transition().duration(600).call(zoomBehavior.transform, d3.zoomIdentity);
+});
+
+// ============================================================
+// SEARCH
+// ============================================================
+
+const searchInput   = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  if (!q) { searchResults.style.display = 'none'; return; }
+
+  const cityMatches = CITIES.filter(c =>
+    c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)
+  );
+  const countryMatches = Object.values(COUNTRIES).filter(c =>
+    c.name.toLowerCase().includes(q)
+  );
+
+  if (cityMatches.length === 0 && countryMatches.length === 0) {
+    searchResults.style.display = 'none';
+    return;
+  }
+
+  searchResults.innerHTML = [
+    ...cityMatches.map(c => `
+      <div class="search-result-item" data-type="city" data-id="${c.id}">
+        📍 ${c.name}
+        <span class="sri-events">${c.eventsPerMin} ev/min</span>
+      </div>`),
+    ...countryMatches.slice(0, 4).map(c => `
+      <div class="search-result-item" data-type="country" data-name="${c.name}">
+        🗺 ${c.name}
+        <span class="sri-events">${c.coolers} coolers</span>
+      </div>`),
+  ].join('');
+
+  searchResults.style.display = 'block';
+
+  searchResults.querySelectorAll('.search-result-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const type = el.dataset.type;
+      if (type === 'city') {
+        const city = CITIES.find(c => c.id === el.dataset.id);
+        if (city) {
+          flyToCity(city);
+          setTimeout(() => openCityModal(city), 600);
+        }
+      } else {
+        const cData = Object.values(COUNTRIES).find(c => c.name === el.dataset.name);
+        if (cData) openDetailPanel(cData);
+      }
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    });
+  });
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    searchResults.style.display = 'none';
+    searchInput.blur();
+  }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.map-search')) searchResults.style.display = 'none';
+});
+
+function flyToCity(city) {
+  const [px, py] = projection([city.lng, city.lat]);
+  svg.transition().duration(700).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity
+      .translate(W / 2, H / 2)
+      .scale(4)
+      .translate(-px, -py)
+  );
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+
+function populateSidebar() {
+  const sorted = [...CITIES].sort((a, b) => b.eventsPerMin - a.eventsPerMin);
+  const maxEv  = sorted[0].eventsPerMin;
+  const list   = document.getElementById('city-list');
+
+  list.innerHTML = sorted.map(city => `
+    <div class="city-row" onclick="openCityModal(CITIES.find(c=>c.id==='${city.id}'))">
+      <div class="city-row-top">
+        <span class="city-name">${city.name}</span>
+        <span class="city-events" id="sb-ev-${city.id}">${city.eventsPerMin} <span>ev/min</span></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="sb-bar-${city.id}" style="width:${Math.round(city.eventsPerMin/maxEv*100)}%"></div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('brands-list').innerHTML =
+    BRANDS.map(b => `<span class="brand-tag">${b}</span>`).join('');
+}
+
+// ============================================================
+// LIVE DATA SIMULATION
+// ============================================================
+
+let updateAge = 0;
+
+function startLiveUpdates() {
+  // Fast ticker: every second
+  setInterval(() => {
+    updateAge++;
+    const ageStr = updateAge < 60 ? `${updateAge}s` : `${Math.floor(updateAge/60)}m ${updateAge%60}s`;
+    document.getElementById('update-age').textContent = ageStr;
+
+    // Door opens accumulate
+    LIVE.doorOpens += Math.round(Math.random() * 8 + 2);
+    document.getElementById('sb-doors').textContent = LIVE.doorOpens.toLocaleString();
+  }, 1000);
+
+  // Medium ticker: every 2.5s - fluctuate events/min per city
+  setInterval(() => {
+    CITIES.forEach(city => {
+      const drift = Math.round((Math.random() - 0.48) * 12);
+      LIVE.cityEvents[city.id] = Math.max(10, city.eventsPerMin + drift + Math.round(Math.sin(Date.now()/5000)*10));
+
+      const el = document.getElementById(`sb-ev-${city.id}`);
+      if (el) el.firstChild.textContent = LIVE.cityEvents[city.id] + ' ';
+
+      const barEl = document.getElementById(`sb-bar-${city.id}`);
+      const maxEv = Math.max(...CITIES.map(c => LIVE.cityEvents[c.id]));
+      if (barEl) barEl.style.width = Math.round(LIVE.cityEvents[city.id] / maxEv * 100) + '%';
+    });
+
+    // Update city core dot sizes
+    mapG.selectAll('.city-core').attr('r', function(d) {
+      return d ? dotRadius(d) : 6;
+    });
+
+    // Temp alerts random walk
+    LIVE.tempAlerts = Math.max(0, LIVE.tempAlerts + Math.round((Math.random() - 0.5) * 2));
+    document.getElementById('sb-temp').textContent = LIVE.tempAlerts;
+
+    // OOS slight fluctuation
+    LIVE.outOfStock = Math.max(0, LIVE.outOfStock + Math.round((Math.random() - 0.45) * 5));
+    document.getElementById('sb-oos').textContent = LIVE.outOfStock.toLocaleString();
+  }, 2500);
+
+  // Slow ticker: every 8s - update header KPIs
+  setInterval(() => {
+    LIVE.connectedCoolers += Math.round(Math.random() * 3);
+    document.getElementById('hkpi-coolers').textContent = LIVE.connectedCoolers.toLocaleString();
+
+    if (Math.random() > 0.7) {
+      LIVE.stores += 1;
+      document.getElementById('hkpi-stores').textContent = LIVE.stores.toLocaleString();
+    }
+
+    // Update sidebar last updated
+    updateAge = 0;
+    document.getElementById('update-age').textContent = '0s';
+    document.getElementById('sb-last-updated').textContent = 'Just updated';
+    setTimeout(() => {
+      document.getElementById('sb-last-updated').textContent = 'A moment ago';
+    }, 2000);
+  }, 8000);
+}
+
+// ============================================================
+// WINDOW RESIZE
+// ============================================================
+
+window.addEventListener('resize', () => {
+  // Simple refresh - could be more sophisticated
+  const w = mapEl.clientWidth;
+  const h = mapEl.clientHeight;
+  svg.attr('width', w).attr('height', h);
+});
+
+// ============================================================
+// GLOBALS (for sidebar onclick attrs)
+// ============================================================
+window.CITIES         = CITIES;
+window.openCityModal  = openCityModal;
+
+// ============================================================
+// START
+// ============================================================
+initMap();
+</script>
+</body>
+</html>
