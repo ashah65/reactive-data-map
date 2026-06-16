@@ -10,23 +10,30 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #050e20;
-      --surface: #0b1628;
-      --surface2: #0f1e36;
-      --border: #1a3055;
-      --accent: #2979ff;
-      --accent2: #00e5ff;
-      --text: #e8f0fe;
-      --text2: #8ab4f8;
-      --text3: #3d6080;
-      --success: #00e676;
-      --warning: #ffab40;
-      --danger: #ff5252;
+      --blue:        #1A6BFF;
+      --blue-light:  #EEF4FF;
+      --blue-mid:    #5B9CFF;
+      --navy:        #0D1C3E;
+      --navy-soft:   #3B5280;
+      --navy-muted:  #8099C0;
+      --bg:          #FFFFFF;
+      --surface:     #F8FBFF;
+      --surface2:    #EEF4FF;
+      --border:      #D6E4F8;
+      --border-soft: #E8F0FD;
+      --ocean:       #EDF3FC;
+      --country-0:   #D8E8F7;
+      --ping:        #FF6A00;
+      --ping-ring:   #FF9240;
+      --success:     #00A870;
+      --warning:     #E68C00;
+      --danger:      #E83B52;
+      --shadow:      rgba(13,28,62,0.08);
     }
 
     body {
       background: var(--bg);
-      color: var(--text);
+      color: var(--navy);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       height: 100vh;
       overflow: hidden;
@@ -34,721 +41,461 @@
       flex-direction: column;
     }
 
-    /* ── HEADER ─────────────────────────────────────────── */
+    /* ── HEADER ── */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      background: var(--navy);
+      border-bottom: 1.5px solid rgba(255,255,255,0.08);
       padding: 0 24px;
-      height: 56px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      z-index: 20;
       gap: 16px;
     }
 
-    .logo-block { flex-shrink: 0; }
-    .logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
-    .logo .r { color: var(--accent); }
-    .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
-
-    .header-kpis {
-      display: flex;
-      gap: 0;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .kpi {
-      text-align: center;
-      padding: 0 20px;
-      border-right: 1px solid var(--border);
-    }
-    .kpi:first-child { border-left: 1px solid var(--border); }
-
-    .kpi-val {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text);
-      line-height: 1.1;
-    }
-    .kpi-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1px; }
-    .kpi-delta { font-size: 10px; color: var(--success); margin-top: 1px; }
-
-    .header-status {
-      flex-shrink: 0;
+    .logo-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text3);
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 160px;
     }
+    .logo-img {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+    .logo-fallback {
+      display: none;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-icon-box {
+      width: 32px; height: 32px;
+      background: var(--navy);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-text-block { line-height: 1.15; }
+    .logo-wordmark { font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+    .logo-wordmark .r { color: var(--blue-mid); }
+    .logo-tagline { font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.8px; text-transform: uppercase; }
 
+    .kpis { display: flex; flex: 1; justify-content: center; }
+    .kpi { padding: 0 20px; text-align: center; border-right: 1.5px solid rgba(255,255,255,0.1); }
+    .kpi:first-child { border-left: 1.5px solid rgba(255,255,255,0.1); }
+    .kpi-val { font-size: 17px; font-weight: 800; color: #fff; line-height: 1.1; }
+    .kpi-label { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 2px; }
+    .kpi-delta { font-size: 10px; color: var(--blue-mid); margin-top: 1px; font-weight: 600; }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px; color: #fff; font-weight: 600;
+      flex-shrink: 0;
+    }
     .live-dot {
-      width: 7px; height: 7px;
+      width: 6px; height: 6px;
       background: var(--success);
       border-radius: 50%;
-      animation: livepulse 2s ease-in-out infinite;
+      animation: blink 1.8s ease-in-out infinite;
     }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    @keyframes livepulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,230,118,0.5); }
-      50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,230,118,0); }
-    }
+    /* ── LAYOUT ── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
 
-    /* ── MAIN LAYOUT ──────────────────────────────────── */
-    .layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+    /* ── MAP ── */
+    .map-wrap { flex: 1; position: relative; overflow: hidden; background: var(--ocean); }
+    #map-svg { display: block; width: 100%; height: 100%; }
 
-    /* ── MAP AREA ─────────────────────────────────────── */
-    .map-area {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      background: radial-gradient(ellipse at 50% 60%, #081428 0%, #050e20 70%);
-    }
-
-    #map-svg { width: 100%; height: 100%; display: block; }
-
-    /* Map overlay controls */
     .map-controls {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      display: flex;
-      gap: 6px;
-      z-index: 10;
+      position: absolute; top: 14px; left: 14px;
+      display: flex; gap: 6px; z-index: 10;
     }
-
     .filter-btn {
-      background: rgba(11, 22, 40, 0.85);
-      border: 1px solid var(--border);
-      color: var(--text2);
-      padding: 5px 13px;
-      border-radius: 20px;
-      font-size: 11px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      transition: all 0.2s;
-      font-family: inherit;
+      background: rgba(255,255,255,0.93);
+      border: 1.5px solid var(--border);
+      color: var(--navy-soft);
+      padding: 5px 14px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      cursor: pointer; backdrop-filter: blur(6px);
+      font-family: inherit; transition: all 0.18s;
     }
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent2); }
-    .filter-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      font-weight: 600;
+    .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    #back-btn {
+      display: none;
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.96);
+      border: 1.5px solid var(--border);
+      color: var(--navy); padding: 6px 14px;
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; z-index: 10;
+      align-items: center; gap: 6px;
+      box-shadow: 0 2px 8px var(--shadow); transition: all 0.15s;
+    }
+    #back-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+    #us-banner {
+      display: none;
+      position: absolute; top: 14px; right: 16px;
+      background: var(--blue); color: white;
+      font-size: 11px; font-weight: 700;
+      padding: 5px 13px; border-radius: 20px; z-index: 10;
     }
 
     .map-search {
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
+      position: absolute; top: 14px; left: 50%;
+      transform: translateX(-50%); z-index: 10;
     }
-    .search-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      color: var(--text3);
-      font-size: 13px;
-      pointer-events: none;
-    }
+    .search-wrap { position: relative; }
     .search-input {
-      background: rgba(11, 22, 40, 0.9);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 14px 6px 32px;
-      border-radius: 20px;
-      font-size: 12px;
-      width: 220px;
-      outline: none;
-      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.96);
+      border: 1.5px solid var(--border);
+      color: var(--navy); padding: 7px 14px 7px 34px;
+      border-radius: 20px; font-size: 12px; width: 230px;
+      outline: none; backdrop-filter: blur(6px);
       font-family: inherit;
-      transition: border-color 0.2s, width 0.3s;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: border-color 0.18s, width 0.3s;
     }
-    .search-input:focus { border-color: var(--accent); width: 260px; }
-    .search-input::placeholder { color: var(--text3); }
-
-    /* Search results dropdown */
+    .search-input:focus { border-color: var(--blue); width: 268px; }
+    .search-input::placeholder { color: var(--navy-muted); }
+    .search-icon {
+      position: absolute; left: 11px; top: 50%;
+      transform: translateY(-50%); color: var(--navy-muted);
+      font-size: 13px; pointer-events: none;
+    }
     #search-results {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0; right: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      display: none;
-      z-index: 100;
+      display: none; position: absolute;
+      top: calc(100% + 6px); left: 0; right: 0;
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 10px; overflow: hidden; z-index: 100;
+      box-shadow: 0 8px 24px var(--shadow);
     }
-    .search-result-item {
-      padding: 8px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      color: var(--text2);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.15s;
+    .sri {
+      padding: 9px 14px; font-size: 12px; cursor: pointer;
+      color: var(--navy-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.1s;
     }
-    .search-result-item:hover { background: var(--surface2); color: var(--text); }
-    .search-result-item .sri-events { margin-left: auto; color: var(--accent2); font-weight: 700; font-size: 11px; }
+    .sri:hover { background: var(--blue-light); color: var(--navy); }
+    .sri-right { color: var(--blue); font-weight: 700; font-size: 11px; }
 
-    /* Map legend */
     .map-legend {
-      position: absolute;
-      bottom: 14px;
-      left: 14px;
-      background: rgba(11, 22, 40, 0.85);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      backdrop-filter: blur(8px);
-      z-index: 10;
+      position: absolute; bottom: 16px; left: 16px;
+      background: rgba(255,255,255,0.94);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; z-index: 10;
+      box-shadow: 0 2px 8px var(--shadow);
     }
-    .legend-title { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .legend-scale {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .legend-gradient {
-      width: 80px; height: 6px;
-      background: linear-gradient(to right, #0d1a35, #1565c0, #1e88e5);
-      border-radius: 3px;
-    }
-    .legend-labels { display: flex; justify-content: space-between; width: 80px; margin-top: 2px; }
-    .legend-label { font-size: 9px; color: var(--text3); }
+    .leg-title { font-size: 9px; color: var(--navy-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .grad-track { width: 90px; height: 6px; background: linear-gradient(to right, var(--country-0), var(--blue-mid), var(--blue)); border-radius: 3px; }
+    .grad-ends { display: flex; justify-content: space-between; margin-top: 2px; font-size: 9px; color: var(--navy-muted); }
+    .leg-city { display: flex; align-items: center; gap: 7px; margin-top: 8px; }
+    .leg-dot { width: 9px; height: 9px; background: var(--ping); border-radius: 50%; }
+    .leg-city-lbl { font-size: 9px; color: var(--navy-muted); }
 
-    .legend-city-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .legend-city-dot {
-      width: 8px; height: 8px;
-      background: var(--accent2);
-      border-radius: 50%;
-      box-shadow: 0 0 6px var(--accent2);
-    }
-    .legend-city-label { font-size: 9px; color: var(--text3); }
-
-    /* Zoom controls */
-    .zoom-controls {
-      position: absolute;
-      bottom: 14px;
-      right: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      z-index: 10;
+    .zoom-btns {
+      position: absolute; bottom: 16px; right: 16px;
+      display: flex; flex-direction: column; gap: 4px; z-index: 10;
     }
     .zoom-btn {
-      width: 28px; height: 28px;
-      background: rgba(11, 22, 40, 0.85);
-      border: 1px solid var(--border);
-      color: var(--text2);
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(8px);
-      font-family: inherit;
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.96);
+      border: 1.5px solid var(--border); color: var(--navy-soft);
+      border-radius: 8px; font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit; box-shadow: 0 1px 4px var(--shadow);
       transition: all 0.15s;
     }
-    .zoom-btn:hover { border-color: var(--accent); color: var(--text); }
+    .zoom-btn:hover { border-color: var(--blue); color: var(--blue); }
 
-    /* ── SIDEBAR ──────────────────────────────────────── */
+    /* ── SIDEBAR ── */
     .sidebar {
-      width: 268px;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      flex-shrink: 0;
+      width: 272px; background: var(--bg);
+      border-left: 1.5px solid var(--border-soft);
+      display: flex; flex-direction: column; overflow: hidden;
+      flex-shrink: 0; box-shadow: -2px 0 8px rgba(13,28,62,0.04);
     }
+    .sb-scroll { flex: 1; overflow-y: auto; padding: 18px 16px; }
+    .sb-scroll::-webkit-scrollbar { width: 3px; }
+    .sb-scroll::-webkit-scrollbar-thumb { background: var(--border); }
 
-    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 16px; }
-    .sidebar-scroll::-webkit-scrollbar { width: 3px; }
-    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-    .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .sb-section { margin-bottom: 20px; }
-    .sb-section-title {
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--accent);
-      margin-bottom: 10px;
+    .sb-section { margin-bottom: 22px; }
+    .sb-title {
+      font-size: 9px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1.2px; color: var(--blue);
+      margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--blue-light);
     }
 
     .stat-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(26,48,85,0.5);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid var(--border-soft);
     }
     .stat-row:last-child { border-bottom: none; }
+    .stat-label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--navy-soft); }
+    .stat-icon { font-size: 14px; }
+    .stat-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .stat-val.warn   { color: var(--warning); }
+    .stat-val.danger { color: var(--danger); }
 
-    .stat-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text2);
-    }
-    .stat-icon { font-size: 13px; }
-    .stat-value { font-size: 14px; font-weight: 700; color: var(--text); }
-    .stat-value.danger { color: var(--danger); }
-    .stat-value.warning { color: var(--warning); }
-
-    /* City activity rows */
     .city-row {
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(26,48,85,0.4);
-      cursor: pointer;
+      padding: 7px 7px; margin: 0 -7px;
+      border-radius: 6px; cursor: pointer;
+      border-bottom: 1px solid var(--border-soft);
       transition: background 0.15s;
-      border-radius: 4px;
-      padding: 7px 6px;
-      margin: 0 -6px;
     }
-    .city-row:hover { background: rgba(41,121,255,0.06); }
     .city-row:last-child { border-bottom: none; }
+    .city-row:hover { background: var(--blue-light); }
+    .city-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+    .city-name { font-size: 11px; color: var(--navy-soft); font-weight: 500; }
+    .city-ev { font-size: 12px; font-weight: 800; color: var(--blue); }
+    .city-ev span { font-size: 9px; color: var(--navy-muted); font-weight: 400; }
+    .prog { height: 3px; background: var(--border-soft); border-radius: 2px; overflow: hidden; }
+    .prog-fill { height: 100%; background: linear-gradient(to right,var(--blue-mid),var(--blue)); border-radius: 2px; transition: width 1.2s ease; }
 
-    .city-row-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    .city-name { font-size: 11px; color: var(--text2); }
-    .city-events { font-size: 12px; font-weight: 700; color: var(--accent2); }
-    .city-events span { font-size: 9px; color: var(--text3); font-weight: 400; }
-
-    .progress-bar {
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(to right, var(--accent), var(--accent2));
-      border-radius: 2px;
-      transition: width 1s ease;
-    }
-
-    /* Brands */
-    .brands-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
+    .brands-grid { display: flex; flex-wrap: wrap; gap: 5px; }
     .brand-tag {
-      background: rgba(41,121,255,0.08);
-      border: 1px solid rgba(41,121,255,0.2);
-      color: var(--text3);
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-size: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--navy-soft); padding: 3px 9px;
+      border-radius: 10px; font-size: 10px; font-weight: 500;
     }
 
-    /* Sidebar footer */
-    .sidebar-footer {
-      padding: 10px 16px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .sb-footer {
+      padding: 10px 16px; border-top: 1px solid var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface);
     }
-    .last-updated { font-size: 10px; color: var(--text3); display: flex; align-items: center; gap: 5px; }
+    .sb-updated { font-size: 10px; color: var(--navy-muted); display: flex; align-items: center; gap: 5px; }
 
-    /* ── TOOLTIP ──────────────────────────────────────── */
+    /* ── TOOLTIP ── */
     #tooltip {
-      position: fixed;
-      background: rgba(11, 22, 40, 0.97);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0;
-      pointer-events: none;
-      z-index: 2000;
-      backdrop-filter: blur(12px);
-      min-width: 210px;
-      opacity: 0;
-      transform: scale(0.95);
-      transition: opacity 0.15s, transform 0.15s;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(41,121,255,0.1);
-      will-change: transform, opacity;
+      position: fixed; z-index: 2000; pointer-events: none;
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 10px; min-width: 180px;
+      opacity: 0; transform: scale(0.94);
+      transition: opacity 0.12s, transform 0.12s;
+      box-shadow: 0 8px 28px rgba(13,28,62,0.14), 0 0 0 1px rgba(26,107,255,0.06);
     }
     #tooltip.visible { opacity: 1; transform: scale(1); }
-
-    .tt-header {
-      padding: 10px 14px 8px;
-      border-bottom: 1px solid rgba(26,48,85,0.6);
+    .tt-name {
+      padding: 10px 14px 8px; font-size: 13px; font-weight: 700; color: var(--navy);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; gap: 6px;
     }
-    .tt-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .tt-badge {
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .tt-badge.high { background: rgba(0,230,118,0.15); color: var(--success); }
-    .tt-badge.medium { background: rgba(41,121,255,0.15); color: var(--accent2); }
-    .tt-badge.low { background: rgba(61,96,128,0.2); color: var(--text3); }
-
     .tt-body { padding: 10px 14px; }
-    .tt-big {
-      font-size: 30px;
-      font-weight: 900;
-      color: var(--accent2);
-      line-height: 1;
-      margin-bottom: 3px;
-    }
-    .tt-big-unit { font-size: 11px; color: var(--text3); font-weight: 400; }
+    .tt-stores-label { font-size: 9px; color: var(--navy-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+    .tt-stores-val { font-size: 26px; font-weight: 900; color: var(--blue); line-height: 1; }
+    .tt-stores-unit { font-size: 11px; color: var(--navy-muted); margin-top: 2px; }
+    .tt-footer { padding: 6px 14px; border-top: 1px solid var(--border-soft); font-size: 10px; color: var(--navy-muted); }
 
-    .tt-metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .tt-metric { }
-    .tt-metric-val { font-size: 14px; font-weight: 700; color: var(--text); }
-    .tt-metric-lbl { font-size: 9px; color: var(--text3); }
-
-    .tt-footer {
-      padding: 6px 14px;
-      border-top: 1px solid rgba(26,48,85,0.6);
-      font-size: 10px;
-      color: var(--text3);
-    }
-
-    /* ── DETAIL PANEL ─────────────────────────────────── */
+    /* ── DETAIL PANEL ── */
     #detail-panel {
-      position: absolute;
-      top: 0; left: 0;
-      width: 300px;
-      height: 100%;
-      background: rgba(11, 22, 40, 0.97);
-      border-right: 1px solid var(--border);
-      z-index: 500;
-      overflow-y: auto;
+      position: absolute; top: 0; left: 0;
+      width: 290px; height: 100%;
+      background: #fff;
+      border-right: 1.5px solid var(--border);
+      z-index: 400; overflow-y: auto;
       transform: translateX(-100%);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(16px);
-      padding: 0;
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 2px 0 16px rgba(13,28,62,0.1);
     }
     #detail-panel.open { transform: translateX(0); }
     #detail-panel::-webkit-scrollbar { width: 3px; }
     #detail-panel::-webkit-scrollbar-thumb { background: var(--border); }
 
-    .panel-header {
-      padding: 16px 16px 12px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: rgba(11, 22, 40, 0.98);
-      backdrop-filter: blur(8px);
-      z-index: 1;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+    .dp-header {
+      padding: 16px 16px 12px; border-bottom: 1.5px solid var(--border-soft);
+      position: sticky; top: 0; background: rgba(255,255,255,0.98); backdrop-filter: blur(6px); z-index: 1;
     }
-    .panel-title { font-size: 18px; font-weight: 800; color: var(--text); }
-    .panel-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-    .panel-close {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text2);
-      width: 24px; height: 24px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-family: inherit;
-      transition: all 0.15s;
+    .dp-title-row { display: flex; align-items: flex-start; justify-content: space-between; }
+    .dp-title { font-size: 17px; font-weight: 800; color: var(--navy); }
+    .dp-sub { font-size: 11px; color: var(--navy-muted); margin-top: 3px; }
+    .dp-close {
+      background: none; border: 1.5px solid var(--border); color: var(--navy-muted);
+      width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+      font-size: 14px; display: flex; align-items: center; justify-content: center;
+      font-family: inherit; flex-shrink: 0; transition: all 0.15s;
     }
-    .panel-close:hover { background: var(--border); color: var(--text); }
+    .dp-close:hover { border-color: var(--danger); color: var(--danger); }
+    .dp-body { padding: 14px 16px; }
 
-    .panel-body { padding: 14px; }
-
-    .panel-kpi {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
+    .dp-kpi {
+      background: var(--surface); border: 1.5px solid var(--border-soft);
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
     }
-    .panel-kpi-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-    .panel-kpi-value { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.1; }
-    .panel-kpi-delta { font-size: 10px; color: var(--success); margin-top: 2px; }
+    .dp-kpi-label { font-size: 9px; color: var(--navy-muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 3px; }
+    .dp-kpi-val { font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+    .dp-kpi-delta { font-size: 10px; color: var(--blue); margin-top: 3px; font-weight: 600; }
+    .dp-mini-bars { display: flex; align-items: flex-end; gap: 2px; height: 30px; margin-top: 8px; }
+    .dp-bar { flex: 1; background: var(--blue-mid); border-radius: 2px 2px 0 0; opacity: 0.5; }
+    .dp-bar:last-child { background: var(--blue); opacity: 1; }
+    .dp-section-title { font-size: 9px; color: var(--navy-muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 12px 0 7px; }
+    .dp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .dp-kpi-sm { background: var(--surface); border: 1.5px solid var(--border-soft); border-radius: 6px; padding: 9px 11px; }
+    .dp-kpi-sm .dp-kpi-label { font-size: 8px; }
+    .dp-kpi-sm .dp-kpi-val { font-size: 16px; }
 
-    .mini-bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 2px;
-      height: 32px;
-      margin-top: 8px;
-    }
-    .mini-bar {
-      flex: 1;
-      background: var(--accent);
-      border-radius: 2px 2px 0 0;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-    }
-    .mini-bar:last-child { opacity: 1; background: var(--accent2); }
-    .mini-bar:hover { opacity: 0.9; }
-
-    .panel-section-title { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin: 14px 0 8px; }
-
-    .panel-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-
-    .panel-kpi-sm {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px;
-    }
-    .panel-kpi-sm .panel-kpi-label { font-size: 9px; }
-    .panel-kpi-sm .panel-kpi-value { font-size: 16px; }
-
-    /* ── CITY MODAL ───────────────────────────────────── */
+    /* ── CITY MODAL ── */
     #modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(5,14,32,0.7);
-      backdrop-filter: blur(6px);
-      z-index: 3000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.2s ease;
+      position: fixed; inset: 0;
+      background: rgba(13,28,62,0.4);
+      backdrop-filter: blur(5px);
+      z-index: 3000; display: none;
+      align-items: center; justify-content: center;
     }
     #modal-overlay.open { display: flex; }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     #modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 0;
-      width: 540px;
-      max-height: 85vh;
-      overflow-y: auto;
-      position: relative;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-      animation: slideUp 0.25s cubic-bezier(0.4,0,0.2,1);
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 14px; width: 520px; max-height: 84vh;
+      overflow-y: auto; position: relative;
+      box-shadow: 0 20px 60px rgba(13,28,62,0.18);
+      animation: slideUp 0.22s cubic-bezier(0.4,0,0.2,1);
     }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
     #modal::-webkit-scrollbar { width: 3px; }
     #modal::-webkit-scrollbar-thumb { background: var(--border); }
 
-    .modal-header {
-      padding: 20px 22px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-      z-index: 1;
-    }
-    .modal-title { font-size: 22px; font-weight: 900; color: var(--text); }
-    .modal-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
-
+    .modal-hdr { padding: 20px 22px 14px; border-bottom: 1.5px solid var(--border-soft); position: sticky; top:0; background: rgba(255,255,255,0.98); backdrop-filter:blur(6px); }
+    .modal-title { font-size: 21px; font-weight: 900; color: var(--navy); }
+    .modal-sub { font-size: 12px; color: var(--navy-muted); margin-top: 3px; }
     .modal-close {
-      position: absolute;
-      top: 18px; right: 18px;
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text2);
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: inherit;
-      transition: all 0.15s;
+      position: absolute; top:18px; right:18px;
+      background:none; border:1.5px solid var(--border); color:var(--navy-muted);
+      width:28px; height:28px; border-radius:7px; cursor:pointer;
+      font-size:15px; display:flex; align-items:center; justify-content:center;
+      font-family:inherit; transition:all 0.15s;
     }
-    .modal-close:hover { background: var(--border); color: var(--text); }
+    .modal-close:hover { border-color:var(--danger); color:var(--danger); }
+    .modal-body { padding: 18px 22px 22px; }
 
-    .modal-body { padding: 20px 22px; }
-
-    .modal-live-card {
-      background: linear-gradient(135deg, rgba(0,229,255,0.07) 0%, rgba(41,121,255,0.07) 100%);
-      border: 1px solid rgba(0,229,255,0.2);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 16px;
-      text-align: center;
+    .mlc {
+      background: var(--blue); border-radius: 10px;
+      padding: 18px; margin-bottom: 16px; color: white; text-align: center;
     }
-    .modal-live-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-    .modal-live-value { font-size: 56px; font-weight: 900; color: var(--accent2); line-height: 1; }
-    .modal-live-unit { font-size: 13px; color: var(--text3); margin-top: 4px; }
+    .mlc-label { font-size: 9px; text-transform: uppercase; letter-spacing:1px; opacity:.75; margin-bottom:4px; }
+    .mlc-val { font-size: 52px; font-weight: 900; line-height: 1; }
+    .mlc-unit { font-size: 12px; opacity: .7; margin-top: 4px; }
+    .mlc-sparkline { display:flex; align-items:flex-end; gap:3px; height:44px; margin-top:14px; }
+    .sp-bar { flex:1; border-radius:2px 2px 0 0; cursor:pointer; transition:opacity 0.2s; }
+    .sp-bar:hover { opacity:1 !important; }
 
-    .modal-sparkline {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 50px;
-      margin-top: 14px;
-    }
-    .sp-bar {
-      flex: 1;
-      border-radius: 2px 2px 0 0;
-      transition: height 0.5s ease, opacity 0.3s;
-      cursor: pointer;
-    }
-    .sp-bar:hover { opacity: 1 !important; }
+    .modal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+    .modal-metric { background:var(--surface); border:1.5px solid var(--border-soft); border-radius:8px; padding:11px; }
+    .mm-label { font-size:9px; color:var(--navy-muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+    .mm-val { font-size:17px; font-weight:800; color:var(--navy); }
+    .modal-section-title { font-size:9px; color:var(--navy-muted); text-transform:uppercase; letter-spacing:.8px; margin:14px 0 8px; }
+    .modal-brands { display:flex; flex-wrap:wrap; gap:6px; }
+    .modal-brand-tag { background:var(--blue-light); border:1.5px solid rgba(26,107,255,0.2); color:var(--blue); padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; }
+    .perf-row { margin-bottom:10px; }
+    .perf-top { display:flex; justify-content:space-between; font-size:10px; color:var(--navy-muted); margin-bottom:3px; }
+    .perf-top strong { color:var(--navy); }
+    .perf-track { height:5px; background:var(--border-soft); border-radius:3px; position:relative; }
+    .perf-fill { position:absolute; left:0; top:0; height:100%; background:var(--blue); border-radius:3px; }
+    .perf-avg { position:absolute; top:-3px; width:2px; height:11px; background:var(--navy-muted); border-radius:1px; }
 
-    .modal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-
-    .modal-metric {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+    /* Context menu */
+    #ctx {
+      position:fixed; background:#fff;
+      border:1.5px solid var(--border); border-radius:8px;
+      padding:4px; z-index:4000; display:none; min-width:158px;
+      box-shadow:0 6px 20px rgba(13,28,62,0.14);
     }
-    .mm-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-    .mm-value { font-size: 18px; font-weight: 800; color: var(--text); }
+    .ctx-item { padding:7px 12px; font-size:12px; color:var(--navy-soft); cursor:pointer; border-radius:4px; display:flex; align-items:center; gap:8px; transition:background 0.1s; }
+    .ctx-item:hover { background:var(--blue-light); color:var(--navy); }
+    .ctx-sep { height:1px; background:var(--border-soft); margin:3px 0; }
 
-    .modal-brands { display: flex; flex-wrap: wrap; gap: 6px; }
-    .modal-brand-tag {
-      background: rgba(41,121,255,0.1);
-      border: 1px solid rgba(41,121,255,0.25);
-      color: var(--accent2);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
+    /* Loading */
+    #loading {
+      position:fixed; inset:0; background:rgba(255,255,255,0.92);
+      backdrop-filter:blur(4px); z-index:9999;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     }
-
-    .modal-section-title {
-      font-size: 9px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin: 16px 0 8px;
+    .loading-spinner {
+      width:36px; height:36px; border:3px solid var(--border);
+      border-top-color:var(--blue); border-radius:50%;
+      animation:spin 0.7s linear infinite;
     }
-
-    /* ── MAP SVG STYLES ───────────────────────────────── */
-    .country-path {
-      cursor: pointer;
-      transition: fill 0.25s;
-    }
-    .country-path:hover { stroke-width: 1 !important; }
-
-    .city-hit { cursor: pointer; }
-
-    /* ── COUNTRY CONTEXT MENU ─────────────────────────── */
-    #ctx-menu {
-      position: fixed;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px;
-      z-index: 4000;
-      display: none;
-      min-width: 160px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .ctx-item {
-      padding: 7px 12px;
-      font-size: 12px;
-      color: var(--text2);
-      cursor: pointer;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.1s;
-    }
-    .ctx-item:hover { background: var(--surface2); color: var(--text); }
-    .ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { font-size:13px; color:var(--navy-muted); }
   </style>
 </head>
 <body>
 
+<!-- Loading -->
+<div id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading CoolR Intelligence Network…</div>
+</div>
+
 <!-- HEADER -->
 <header>
-  <div class="logo-block">
-    <div class="logo">Cool<span class="r">R</span></div>
-    <div class="logo-sub">Smarter Data · Better Execution</div>
-  </div>
-
-  <div class="header-kpis">
-    <div class="kpi">
-      <div class="kpi-val" id="hkpi-coolers">15,842</div>
-      <div class="kpi-label">Connected Coolers</div>
-      <div class="kpi-delta">▲ 142 today</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-val" id="hkpi-stores">5,231</div>
-      <div class="kpi-label">Stores</div>
-      <div class="kpi-delta">▲ 37 today</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-val">128</div>
-      <div class="kpi-label">Retailers</div>
-      <div class="kpi-delta">▲ 3 today</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-val">450</div>
-      <div class="kpi-label">Brands</div>
-      <div class="kpi-delta">▲ 12 today</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-val" id="hkpi-images">3.6M</div>
-      <div class="kpi-label">Images / Day</div>
-      <div class="kpi-delta">▲ 286K today</div>
+  <div class="logo-wrap">
+    <img
+      class="logo-img"
+      src="https://www.coolr.ai/wp-content/uploads/2026/02/coolr-ai-logo.svg"
+      alt="CoolR"
+      onerror="this.style.display='none'; document.querySelector('.logo-fallback').style.display='flex';"
+    >
+    <div class="logo-fallback">
+      <div class="logo-icon-box">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;">
+          <rect x="1" y="4" width="18" height="13" rx="2" stroke="white" stroke-width="1.5"/>
+          <circle cx="10" cy="10.5" r="3.5" stroke="white" stroke-width="1.5"/>
+          <circle cx="10" cy="10.5" r="1.2" fill="white"/>
+          <rect x="13.5" y="5.5" width="2.5" height="2" rx=".5" fill="white" opacity=".6"/>
+          <path d="M7 4V2.5M13 4V2.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text-block">
+        <div class="logo-wordmark">Cool<span class="r">R</span></div>
+        <div class="logo-tagline">Smarter Data · Better Execution</div>
+      </div>
     </div>
   </div>
 
-  <div class="header-status">
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-val" id="hk-coolers">—</div><div class="kpi-label">Connected Coolers</div><div class="kpi-delta" id="hk-coolers-d">—</div></div>
+    <div class="kpi"><div class="kpi-val" id="hk-stores">—</div><div class="kpi-label">Stores</div><div class="kpi-delta" id="hk-stores-d">—</div></div>
+    <div class="kpi"><div class="kpi-val" id="hk-retailers">—</div><div class="kpi-label">Retailers</div><div class="kpi-delta" id="hk-retailers-d">—</div></div>
+    <div class="kpi"><div class="kpi-val" id="hk-brands">—</div><div class="kpi-label">Brands</div><div class="kpi-delta" id="hk-brands-d">—</div></div>
+    <div class="kpi"><div class="kpi-val" id="hk-images">—</div><div class="kpi-label">Images / Day</div><div class="kpi-delta" id="hk-images-d">—</div></div>
+  </div>
+
+  <div class="live-badge">
     <div class="live-dot"></div>
-    <span id="live-label">Live · updated <span id="update-age">0s</span> ago</span>
+    <span>Live · <span id="update-age">0s</span> ago</span>
   </div>
 </header>
 
-<!-- MAIN LAYOUT -->
+<!-- MAIN -->
 <div class="layout">
 
-  <!-- MAP AREA -->
-  <div class="map-area" id="map-area">
+  <!-- MAP -->
+  <div class="map-wrap" id="map-wrap">
 
-    <!-- Filter buttons -->
-    <div class="map-controls">
+    <div class="map-controls" id="world-controls">
       <button class="filter-btn active" data-region="world">🌍 World</button>
       <button class="filter-btn" data-region="americas">🌎 Americas</button>
       <button class="filter-btn" data-region="europe">🇪🇺 Europe</button>
       <button class="filter-btn" data-region="apac">🌏 APAC</button>
     </div>
 
-    <!-- Search -->
+    <button id="back-btn">← Back to World Map</button>
+    <div id="us-banner">🇺🇸 United States · State View</div>
+
     <div class="map-search">
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
@@ -757,121 +504,76 @@
       </div>
     </div>
 
-    <!-- D3 Map SVG -->
     <svg id="map-svg"></svg>
 
-    <!-- Detail panel (country) -->
+    <!-- Detail panel (slides from left) -->
     <div id="detail-panel">
-      <div class="panel-header">
-        <div>
-          <div class="panel-title" id="panel-title">Country</div>
-          <div class="panel-sub" id="panel-sub">Region details</div>
+      <div class="dp-header">
+        <div class="dp-title-row">
+          <div><div class="dp-title" id="dp-title">—</div><div class="dp-sub" id="dp-sub"></div></div>
+          <button class="dp-close" id="dp-close">✕</button>
         </div>
-        <button class="panel-close" id="panel-close">✕</button>
       </div>
-      <div class="panel-body" id="panel-body"></div>
+      <div class="dp-body" id="dp-body"></div>
     </div>
 
-    <!-- Legend -->
     <div class="map-legend">
-      <div class="legend-title">Cooler Density</div>
-      <div class="legend-scale">
-        <div>
-          <div class="legend-gradient"></div>
-          <div class="legend-labels">
-            <span class="legend-label">Low</span>
-            <span class="legend-label">High</span>
-          </div>
-        </div>
-      </div>
-      <div class="legend-city-row">
-        <div class="legend-city-dot"></div>
-        <div class="legend-city-label">Active city (size = activity)</div>
-      </div>
+      <div class="leg-title">Store Coverage</div>
+      <div class="grad-track"></div>
+      <div class="grad-ends"><span>Low</span><span>High</span></div>
+      <div class="leg-city"><div class="leg-dot"></div><div class="leg-city-lbl">Active city hub</div></div>
     </div>
 
-    <!-- Zoom controls -->
-    <div class="zoom-controls">
+    <div class="zoom-btns">
       <button class="zoom-btn" id="zoom-in">+</button>
       <button class="zoom-btn" id="zoom-out">−</button>
-      <button class="zoom-btn" id="zoom-reset" title="Reset view" style="font-size:11px;">⌂</button>
+      <button class="zoom-btn" id="zoom-reset" style="font-size:12px;">⌂</button>
     </div>
-
-  </div><!-- /map-area -->
+  </div>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-scroll">
-
+    <div class="sb-scroll">
       <div class="sb-section">
-        <div class="sb-section-title">Network at a Glance</div>
-        <div class="stat-row">
-          <div class="stat-label"><span class="stat-icon">📡</span> Active Coolers</div>
-          <div class="stat-value" id="sb-coolers">15,689</div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-label"><span class="stat-icon">📸</span> Images Today</div>
-          <div class="stat-value" id="sb-images">3.6M</div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-label"><span class="stat-icon">🚪</span> Door Opens</div>
-          <div class="stat-value" id="sb-doors">412,587</div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-label"><span class="stat-icon">🌡</span> Temp Alerts</div>
-          <div class="stat-value warning" id="sb-temp">29</div>
-        </div>
-        <div class="stat-row">
-          <div class="stat-label"><span class="stat-icon">📦</span> Out-of-Stock</div>
-          <div class="stat-value danger" id="sb-oos">1,735</div>
-        </div>
+        <div class="sb-title">Network at a Glance</div>
+        <div class="stat-row"><div class="stat-label"><span class="stat-icon">📡</span>Active Coolers</div><div class="stat-val" id="sb-coolers">—</div></div>
+        <div class="stat-row"><div class="stat-label"><span class="stat-icon">📸</span>Images Today</div><div class="stat-val" id="sb-images">—</div></div>
+        <div class="stat-row"><div class="stat-label"><span class="stat-icon">🚪</span>Door Opens</div><div class="stat-val" id="sb-doors">—</div></div>
+        <div class="stat-row"><div class="stat-label"><span class="stat-icon">🌡</span>Temp Alerts</div><div class="stat-val warn" id="sb-temp">—</div></div>
+        <div class="stat-row"><div class="stat-label"><span class="stat-icon">📦</span>Out-of-Stock</div><div class="stat-val danger" id="sb-oos">—</div></div>
       </div>
-
       <div class="sb-section">
-        <div class="sb-section-title">Top Cities · Events/min</div>
+        <div class="sb-title">Top Cities · Events/min</div>
         <div id="city-list"></div>
       </div>
-
       <div class="sb-section">
-        <div class="sb-section-title">Trusted Brands</div>
+        <div class="sb-title">Trusted Brands</div>
         <div class="brands-grid" id="brands-list"></div>
       </div>
-
-    </div><!-- /sidebar-scroll -->
-
-    <div class="sidebar-footer">
-      <div class="last-updated">
-        <div class="live-dot" style="width:6px;height:6px;"></div>
-        <span id="sb-last-updated">Just now</span>
-      </div>
-      <div style="font-size:9px;color:var(--text3);">CoolR © 2026</div>
     </div>
-  </div><!-- /sidebar -->
+    <div class="sb-footer">
+      <div class="sb-updated"><div class="live-dot" style="width:6px;height:6px;"></div><span id="sb-updated-text">Just now</span></div>
+      <div style="font-size:9px;color:var(--navy-muted);">© 2026 CoolR Group</div>
+    </div>
+  </div>
 
-</div><!-- /layout -->
+</div>
 
 <!-- TOOLTIP -->
 <div id="tooltip">
-  <div class="tt-header">
-    <div class="tt-title">
-      <span id="tt-title-text"></span>
-      <span class="tt-badge" id="tt-badge"></span>
-    </div>
-  </div>
+  <div class="tt-name"><span id="tt-flag"></span><span id="tt-name-el"></span></div>
   <div class="tt-body">
-    <div id="tt-big-wrap" style="display:none">
-      <div class="tt-big" id="tt-big"></div>
-      <div class="tt-big-unit" id="tt-big-unit"></div>
-    </div>
-    <div class="tt-metrics" id="tt-metrics"></div>
+    <div class="tt-stores-label" id="tt-label">Stores Covered</div>
+    <div class="tt-stores-val" id="tt-val">—</div>
+    <div class="tt-stores-unit" id="tt-unit">locations</div>
   </div>
-  <div class="tt-footer" id="tt-footer">Click to see detailed breakdown →</div>
+  <div class="tt-footer" id="tt-footer">Click for details →</div>
 </div>
 
 <!-- CITY MODAL -->
 <div id="modal-overlay">
   <div id="modal">
-    <div class="modal-header">
+    <div class="modal-hdr">
       <div class="modal-title" id="modal-title"></div>
       <div class="modal-sub" id="modal-sub"></div>
       <button class="modal-close" id="modal-close">✕</button>
@@ -881,939 +583,709 @@
 </div>
 
 <!-- CONTEXT MENU -->
-<div id="ctx-menu">
-  <div class="ctx-item" id="ctx-details">🔍 View Details</div>
-  <div class="ctx-item" id="ctx-zoom">🔭 Zoom to Region</div>
+<div id="ctx">
+  <div class="ctx-item" id="ctx-detail">🔍 View Details</div>
+  <div class="ctx-item" id="ctx-zoom-to">🔭 Zoom to Region</div>
   <div class="ctx-sep"></div>
   <div class="ctx-item" id="ctx-copy">📋 Copy Stats</div>
 </div>
 
 <script>
-// ============================================================
-// DATA
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════
+let DATA = null;
+let LIVE = {};
 
-const BRANDS = ["Coca-Cola", "Pepsi", "Red Bull", "Monster", "Danone",
-  "Carrefour", "Tesco", "Ahold Delhaize", "7-Eleven", "Circle K"];
+let svg, mapG, mercator, mercatorPath, zoomBehavior;
+let statesGeoLayer = null;
+let W, H;
 
-const CITIES = [
-  {
-    id: "chicago", name: "Chicago, IL", country: "United States",
-    lat: 41.8781, lng: -87.6298, eventsPerMin: 337,
-    coolers: 1243, stores: 89, retailers: 12,
-    outOfStock: 234, tempAlerts: 3, doorOpens: 52341, imagesPerHour: 124500,
-    brands: ["Coca-Cola", "Pepsi", "Red Bull"],
-    history: [280, 295, 310, 325, 337, 330, 315, 340, 328, 337, 342, 337],
-  },
-  {
-    id: "dallas", name: "Dallas, TX", country: "United States",
-    lat: 32.7767, lng: -96.797, eventsPerMin: 284,
-    coolers: 987, stores: 72, retailers: 8,
-    outOfStock: 178, tempAlerts: 5, doorOpens: 43210, imagesPerHour: 98200,
-    brands: ["Pepsi", "Monster", "Danone"],
-    history: [240, 255, 265, 270, 284, 278, 290, 284, 275, 284, 291, 284],
-  },
-  {
-    id: "phoenix", name: "Phoenix, AZ", country: "United States",
-    lat: 33.4484, lng: -112.074, eventsPerMin: 143,
-    coolers: 521, stores: 41, retailers: 6,
-    outOfStock: 89, tempAlerts: 2, doorOpens: 21890, imagesPerHour: 52300,
-    brands: ["Coca-Cola", "Red Bull"],
-    history: [120, 125, 130, 138, 143, 140, 145, 143, 139, 143, 147, 143],
-  },
-  {
-    id: "london", name: "London, UK", country: "United Kingdom",
-    lat: 51.5074, lng: -0.1278, eventsPerMin: 256,
-    coolers: 891, stores: 63, retailers: 9,
-    outOfStock: 145, tempAlerts: 4, doorOpens: 38940, imagesPerHour: 89100,
-    brands: ["Coca-Cola", "Red Bull", "Tesco"],
-    history: [210, 220, 235, 248, 256, 250, 260, 256, 248, 256, 262, 256],
-  },
-  {
-    id: "amsterdam", name: "Amsterdam, NL", country: "Netherlands",
-    lat: 52.3676, lng: 4.9041, eventsPerMin: 112,
-    coolers: 423, stores: 31, retailers: 5,
-    outOfStock: 67, tempAlerts: 1, doorOpens: 16780, imagesPerHour: 43200,
-    brands: ["Pepsi", "Danone"],
-    history: [90, 95, 100, 108, 112, 109, 115, 112, 107, 112, 116, 112],
-  },
-  {
-    id: "paris", name: "Paris, FR", country: "France",
-    lat: 48.8566, lng: 2.3522, eventsPerMin: 98,
-    coolers: 387, stores: 28, retailers: 4,
-    outOfStock: 54, tempAlerts: 0, doorOpens: 14320, imagesPerHour: 38100,
-    brands: ["Danone", "Carrefour"],
-    history: [80, 85, 90, 95, 98, 95, 100, 98, 94, 98, 102, 98],
-  },
-  {
-    id: "toronto", name: "Toronto, CA", country: "Canada",
-    lat: 43.6532, lng: -79.3832, eventsPerMin: 89,
-    coolers: 312, stores: 24, retailers: 4,
-    outOfStock: 42, tempAlerts: 1, doorOpens: 11230, imagesPerHour: 32100,
-    brands: ["Coca-Cola", "Pepsi"],
-    history: [70, 75, 80, 85, 89, 86, 91, 89, 84, 89, 92, 89],
-  },
-  {
-    id: "sydney", name: "Sydney, AU", country: "Australia",
-    lat: -33.8688, lng: 151.2093, eventsPerMin: 67,
-    coolers: 234, stores: 18, retailers: 3,
-    outOfStock: 31, tempAlerts: 2, doorOpens: 8920, imagesPerHour: 24300,
-    brands: ["Coca-Cola", "Red Bull"],
-    history: [55, 58, 62, 65, 67, 65, 69, 67, 63, 67, 70, 67],
-  },
-  {
-    id: "tokyo", name: "Tokyo, JP", country: "Japan",
-    lat: 35.6762, lng: 139.6503, eventsPerMin: 78,
-    coolers: 289, stores: 22, retailers: 3,
-    outOfStock: 38, tempAlerts: 0, doorOpens: 10120, imagesPerHour: 28900,
-    brands: ["Coca-Cola", "Monster"],
-    history: [62, 66, 71, 75, 78, 76, 80, 78, 73, 78, 81, 78],
-  },
-  {
-    id: "dubai", name: "Dubai, UAE", country: "UAE",
-    lat: 25.2048, lng: 55.2708, eventsPerMin: 54,
-    coolers: 198, stores: 14, retailers: 2,
-    outOfStock: 22, tempAlerts: 3, doorOpens: 7400, imagesPerHour: 19800,
-    brands: ["Pepsi", "Red Bull"],
-    history: [42, 46, 50, 53, 54, 52, 56, 54, 51, 54, 57, 54],
-  },
-];
+const PING_COLOR = '#FF6A00';
+const PING_RING  = '#FF9240';
 
-// ISO 3166-1 numeric country IDs mapped to data
-const COUNTRIES = {
-  840: { name: "United States",   coolers: 8500,  stores: 2800, activity: 0.92, growth: "+8.2%",  region: "americas" },
-  826: { name: "United Kingdom",  coolers: 1200,  stores: 380,  activity: 0.66, growth: "+5.1%",  region: "europe"   },
-  250: { name: "France",          coolers: 580,   stores: 190,  activity: 0.47, growth: "+3.8%",  region: "europe"   },
-  276: { name: "Germany",         coolers: 720,   stores: 240,  activity: 0.52, growth: "+4.2%",  region: "europe"   },
-  528: { name: "Netherlands",     coolers: 430,   stores: 140,  activity: 0.41, growth: "+6.1%",  region: "europe"   },
-  124: { name: "Canada",          coolers: 980,   stores: 320,  activity: 0.57, growth: "+7.3%",  region: "americas" },
-  484: { name: "Mexico",          coolers: 650,   stores: 210,  activity: 0.46, growth: "+12.4%", region: "americas" },
-  76:  { name: "Brazil",          coolers: 420,   stores: 135,  activity: 0.36, growth: "+15.2%", region: "americas" },
-  36:  { name: "Australia",       coolers: 340,   stores: 108,  activity: 0.31, growth: "+4.9%",  region: "apac"     },
-  392: { name: "Japan",           coolers: 380,   stores: 122,  activity: 0.37, growth: "+2.1%",  region: "apac"     },
-  156: { name: "China",           coolers: 890,   stores: 290,  activity: 0.52, growth: "+18.7%", region: "apac"     },
-  356: { name: "India",           coolers: 320,   stores: 100,  activity: 0.29, growth: "+22.3%", region: "apac"     },
-  410: { name: "South Korea",     coolers: 290,   stores: 92,   activity: 0.31, growth: "+8.9%",  region: "apac"     },
-  724: { name: "Spain",           coolers: 410,   stores: 132,  activity: 0.39, growth: "+5.6%",  region: "europe"   },
-  380: { name: "Italy",           coolers: 380,   stores: 122,  activity: 0.36, growth: "+4.1%",  region: "europe"   },
-  792: { name: "Turkey",          coolers: 210,   stores: 68,   activity: 0.26, growth: "+9.8%",  region: "europe"   },
-  616: { name: "Poland",          coolers: 180,   stores: 58,   activity: 0.23, growth: "+6.3%",  region: "europe"   },
-  752: { name: "Sweden",          coolers: 160,   stores: 52,   activity: 0.21, growth: "+3.7%",  region: "europe"   },
-  56:  { name: "Belgium",         coolers: 140,   stores: 45,   activity: 0.20, growth: "+4.4%",  region: "europe"   },
-  756: { name: "Switzerland",     coolers: 120,   stores: 38,   activity: 0.19, growth: "+2.9%",  region: "europe"   },
-  710: { name: "South Africa",    coolers: 95,    stores: 30,   activity: 0.16, growth: "+11.2%", region: "apac"     },
-  784: { name: "UAE",             coolers: 210,   stores: 68,   activity: 0.28, growth: "+16.8%", region: "apac"     },
-  682: { name: "Saudi Arabia",    coolers: 180,   stores: 58,   activity: 0.26, growth: "+14.5%", region: "apac"     },
-  643: { name: "Russia",          coolers: 320,   stores: 103,  activity: 0.31, growth: "+1.2%",  region: "europe"   },
-  246: { name: "Finland",         coolers: 90,    stores: 29,   activity: 0.16, growth: "+3.1%",  region: "europe"   },
-  578: { name: "Norway",          coolers: 85,    stores: 27,   activity: 0.15, growth: "+2.8%",  region: "europe"   },
-  208: { name: "Denmark",         coolers: 100,   stores: 32,   activity: 0.17, growth: "+3.5%",  region: "europe"   },
-  40:  { name: "Austria",         coolers: 130,   stores: 42,   activity: 0.20, growth: "+3.2%",  region: "europe"   },
-  620: { name: "Portugal",        coolers: 110,   stores: 35,   activity: 0.18, growth: "+5.4%",  region: "europe"   },
-  554: { name: "New Zealand",     coolers: 65,    stores: 21,   activity: 0.12, growth: "+4.2%",  region: "apac"     },
-  702: { name: "Singapore",       coolers: 88,    stores: 28,   activity: 0.22, growth: "+9.1%",  region: "apac"     },
-  458: { name: "Malaysia",        coolers: 72,    stores: 23,   activity: 0.18, growth: "+11.4%", region: "apac"     },
-  764: { name: "Thailand",        coolers: 68,    stores: 22,   activity: 0.17, growth: "+13.2%", region: "apac"     },
-};
+let currentView = 'world';
+let currentK    = 1;   // tracks live zoom scale for ping sizing
+let ctxTarget   = null;
 
-// Live state (mutates in place)
-const LIVE = {
-  doorOpens:     412587,
-  tempAlerts:    29,
-  outOfStock:    1735,
-  activeCoolers: 15689,
-  connectedCoolers: 15842,
-  stores:        5231,
-  cityEvents:    Object.fromEntries(CITIES.map(c => [c.id, c.eventsPerMin])),
-};
+const worldColorScale = d3.scaleLinear()
+  .domain([0, 0.3, 0.65, 1])
+  .range(['#D8E8F7','#93C0EF','#4B87E0','#1A6BFF']);
 
-// ============================================================
-// REGION ZOOM PARAMS
-// ============================================================
+const stateColorScale = d3.scaleLinear()
+  .domain([0, 50, 150, 350])
+  .range(['#E0EDFF','#93C0EF','#4B87E0','#1A6BFF']);
 
-const REGION_VIEWS = {
-  world:    { scale: null, center: [0, 15] },         // scale computed from width
-  americas: { scale: 0.38, center: [-80, 10] },
-  europe:   { scale: 0.65, center: [12, 50] },
-  apac:     { scale: 0.40, center: [115, 12] },
-};
+// ═══════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ═══════════════════════════════════════════════════════════
+async function bootstrap() {
+  const [appData, worldAtlas, usStatesGeo] = await Promise.all([
+    d3.json('./data.json'),
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'),
+    d3.json('https://cdn.jsdelivr.net/gh/PublicaMundi/MappingAPI@master/data/geojson/us-states.json'),
+  ]);
 
-// ============================================================
-// D3 SETUP
-// ============================================================
+  DATA = appData;
+  LIVE = {
+    doorOpens:        DATA.network.doorOpenEvents,
+    tempAlerts:       DATA.network.temperatureAlerts,
+    outOfStock:       DATA.network.outOfStockEvents,
+    connectedCoolers: DATA.network.connectedCoolers,
+    stores:           DATA.network.stores,
+    evpm: Object.fromEntries(DATA.cities.map(c => [c.id, c.evpm])),
+  };
 
-const mapEl   = document.getElementById('map-area');
-const svgEl   = document.getElementById('map-svg');
-const W       = mapEl.clientWidth;
-const H       = mapEl.clientHeight;
-const baseScale = W / 6.3;
-
-const svg = d3.select('#map-svg').attr('width', W).attr('height', H);
-
-// Defs for glow and gradient
-const defs = svg.append('defs');
-const glowFilter = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
-glowFilter.append('feGaussianBlur').attr('stdDeviation', '3.5').attr('result', 'coloredBlur');
-const feMerge = glowFilter.append('feMerge');
-feMerge.append('feMergeNode').attr('in', 'coloredBlur');
-feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
-
-// Subtle glow for countries
-const countryGlow = defs.append('filter').attr('id', 'country-glow');
-countryGlow.append('feGaussianBlur').attr('stdDeviation', '2').attr('result', 'b');
-const cm = countryGlow.append('feMerge');
-cm.append('feMergeNode').attr('in', 'b');
-cm.append('feMergeNode').attr('in', 'SourceGraphic');
-
-const projection = d3.geoMercator()
-  .scale(baseScale)
-  .center([0, 15])
-  .translate([W / 2, H / 2]);
-
-const pathGen = d3.geoPath().projection(projection);
-
-const colorScale = d3.scaleLinear()
-  .domain([0, 0.25, 0.5, 0.75, 1])
-  .range(['#061020', '#0a1e40', '#0d3070', '#1565c0', '#1e88e5']);
-
-// Main zoom group
-const mapG = svg.append('g').attr('class', 'map-root');
-
-// Zoom behavior
-const zoomBehavior = d3.zoom()
-  .scaleExtent([0.8, 12])
-  .on('zoom', event => {
-    mapG.attr('transform', event.transform);
-    // Scale city dots inversely so they don't grow too big
-    const k = event.transform.k;
-    mapG.selectAll('.city-core').attr('r', d => dotRadius(d) / Math.sqrt(k));
-    mapG.selectAll('.city-ring').attr('r', d => (dotRadius(d) + 5) / Math.sqrt(k));
-  });
-
-svg.call(zoomBehavior);
-svg.on('dblclick.zoom', null); // Prevent double-click zoom (we handle it)
-
-function dotRadius(city) {
-  return 4 + (LIVE.cityEvents[city.id] / 337) * 8;
+  populateHeader();
+  populateSidebar();
+  initMap(worldAtlas, usStatesGeo);
+  startLiveUpdates();
+  document.getElementById('loading').style.display = 'none';
 }
 
-// ============================================================
-// MAP RENDER
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// HEADER + SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function populateHeader() {
+  const n = DATA.network;
+  document.getElementById('hk-coolers').textContent   = n.connectedCoolers.toLocaleString() + '+';
+  document.getElementById('hk-coolers-d').textContent = `▲ ${n.connectedCoolersDelta} today`;
+  document.getElementById('hk-stores').textContent    = n.stores.toLocaleString() + '+';
+  document.getElementById('hk-stores-d').textContent  = `▲ ${n.storesDelta} today`;
+  document.getElementById('hk-retailers').textContent = n.retailers + '+';
+  document.getElementById('hk-retailers-d').textContent = `▲ ${n.retailersDelta} today`;
+  document.getElementById('hk-brands').textContent    = n.brands + '+';
+  document.getElementById('hk-brands-d').textContent  = `▲ ${n.brandsDelta} today`;
+  document.getElementById('hk-images').textContent    = n.imagesPerDayMillions + 'M+';
+  document.getElementById('hk-images-d').textContent  = `▲ ${n.imagesPerDayDeltaK}K today`;
 
-async function initMap() {
-  let world;
-  try {
-    world = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-  } catch (e) {
-    console.error('Failed to load world-atlas:', e);
-    return;
-  }
+  document.getElementById('sb-coolers').textContent = n.activeCoolers.toLocaleString();
+  document.getElementById('sb-images').textContent  = n.imagesPerDayMillions + 'M';
+  document.getElementById('sb-doors').textContent   = n.doorOpenEvents.toLocaleString();
+  document.getElementById('sb-temp').textContent    = n.temperatureAlerts;
+  document.getElementById('sb-oos').textContent     = n.outOfStockEvents.toLocaleString();
+}
 
-  const countries = topojson.feature(world, world.objects.countries);
-  const borders   = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
+function populateSidebar() {
+  const sorted = [...DATA.cities].sort((a,b) => b.evpm - a.evpm);
+  const maxEv  = sorted[0].evpm;
+
+  document.getElementById('city-list').innerHTML = sorted.map(c => `
+    <div class="city-row" onclick="openCityModal(DATA.cities.find(x=>x.id==='${c.id}'))">
+      <div class="city-row-top">
+        <span class="city-name">${c.name}</span>
+        <span class="city-ev" id="sbev-${c.id}">${c.evpm} <span>ev/min</span></span>
+      </div>
+      <div class="prog"><div class="prog-fill" id="sbbar-${c.id}" style="width:${Math.round(c.evpm/maxEv*100)}%"></div></div>
+    </div>`).join('');
+
+  document.getElementById('brands-list').innerHTML =
+    DATA.brands.map(b => `<span class="brand-tag">${b}</span>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════════════════
+function initMap(worldAtlas, usStatesGeo) {
+  const mapWrap = document.getElementById('map-wrap');
+  W = mapWrap.clientWidth;
+  H = mapWrap.clientHeight;
+
+  svg = d3.select('#map-svg').attr('width', W).attr('height', H);
+
+  // Glow filter
+  const defs = svg.append('defs');
+  const glow = defs.append('filter').attr('id','glow').attr('x','-60%').attr('y','-60%').attr('width','220%').attr('height','220%');
+  glow.append('feGaussianBlur').attr('stdDeviation','3.5').attr('result','b');
+  const gm = glow.append('feMerge');
+  gm.append('feMergeNode').attr('in','b');
+  gm.append('feMergeNode').attr('in','SourceGraphic');
+
+  // Single Mercator projection used for EVERYTHING
+  mercator = d3.geoMercator()
+    .scale(W / 6.3)
+    .center([0, 15])
+    .translate([W/2, H/2]);
+  mercatorPath = d3.geoPath().projection(mercator);
+
+  zoomBehavior = d3.zoom()
+    .scaleExtent([0.7, 14])
+    .on('zoom', evt => {
+      mapG.attr('transform', evt.transform);
+      currentK = evt.transform.k;
+      // Scale dots so they stay a constant pixel size on screen (divide by k, not sqrt)
+      mapG.selectAll('.city-core').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
+    });
+
+  svg.call(zoomBehavior);
+  svg.on('dblclick.zoom', null);
+  mapG = svg.append('g').attr('class','map-root');
 
   // Ocean
-  mapG.append('path')
-    .datum({ type: 'Sphere' })
-    .attr('d', pathGen)
-    .attr('fill', '#050e20');
+  mapG.append('path').datum({type:'Sphere'}).attr('d', mercatorPath).attr('fill','#EDF3FC');
 
-  // Graticule (grid lines)
+  // Graticule
   mapG.append('path')
-    .datum(d3.geoGraticule().step([30, 30])())
-    .attr('d', pathGen)
-    .attr('fill', 'none')
-    .attr('stroke', 'rgba(26,48,85,0.25)')
-    .attr('stroke-width', 0.5);
+    .datum(d3.geoGraticule().step([30,30])())
+    .attr('d', mercatorPath)
+    .attr('fill','none').attr('stroke','rgba(180,210,240,0.3)').attr('stroke-width',.5);
 
-  // Countries
-  mapG.selectAll('.country-path')
+  // Country fills
+  const countries = topojson.feature(worldAtlas, worldAtlas.objects.countries);
+  const borders   = topojson.mesh(worldAtlas, worldAtlas.objects.countries, (a,b) => a!==b);
+
+  mapG.selectAll('.c-path')
     .data(countries.features)
-    .enter()
-    .append('path')
-    .attr('class', 'country-path')
-    .attr('d', pathGen)
+    .enter().append('path')
+    .attr('class','c-path').attr('data-id', d => d.id)
+    .attr('d', mercatorPath)
     .attr('fill', d => {
-      const c = COUNTRIES[+d.id];
-      return c ? colorScale(c.activity) : '#070f22';
+      if (+d.id === 840) return '#1A6BFF';  // US = CoolR blue (signals drilldown)
+      const c = DATA.countries[String(d.id)];
+      return c ? worldColorScale(c.activity) : '#D8E8F7';
     })
-    .attr('stroke', '#1a3055')
-    .attr('stroke-width', 0.4)
+    .attr('stroke','#C5DCF5').attr('stroke-width',.4)
     .on('mouseenter', onCountryEnter)
-    .on('mousemove', onMouseMove)
+    .on('mousemove',  onMouseMove)
     .on('mouseleave', onCountryLeave)
-    .on('click', onCountryClick)
+    .on('click',      onCountryClick)
     .on('contextmenu', onCountryRightClick);
 
-  // Country borders overlay
-  mapG.append('path')
-    .datum(borders)
-    .attr('fill', 'none')
-    .attr('stroke', 'rgba(26,48,85,0.5)')
-    .attr('stroke-width', 0.3)
-    .attr('d', pathGen);
+  mapG.append('path').datum(borders).attr('d', mercatorPath)
+    .attr('fill','none').attr('stroke','#C5DCF5').attr('stroke-width',.3);
 
-  // City markers
-  const cityG = mapG.append('g').attr('class', 'cities');
+  // ── US States layer — same Mercator projection, hidden until drill-down ──
+  statesGeoLayer = mapG.append('g').attr('class','us-states-layer').style('display','none');
 
-  CITIES.forEach(city => {
-    const [x, y] = projection([city.lng, city.lat]);
+  statesGeoLayer.selectAll('.s-path')
+    .data(usStatesGeo.features)
+    .enter().append('path')
+    .attr('class','s-path')
+    .attr('d', mercatorPath)
+    .attr('fill', d => {
+      // PublicaMundi stores FIPS in properties.id (or sometimes as a number)
+      const fips = String(d.id || '').padStart(2,'0');
+      const s = DATA.us_states[fips];
+      return s ? stateColorScale(s.stores) : '#D8E8F7';
+    })
+    .attr('stroke','rgba(255,255,255,0.85)').attr('stroke-width', .7)
+    .on('mouseenter', onStateEnter)
+    .on('mousemove',  onMouseMove)
+    .on('mouseleave', onStateLeave)
+    .on('click',      onStateClick);
 
-    const g = cityG.append('g')
-      .datum(city)
-      .attr('class', 'city-group')
-      .attr('transform', `translate(${x},${y})`);
+  // ── City pings ──
+  addCityPings(DATA.cities);
 
-    // Outer animated ring
-    const ring = g.append('circle')
-      .datum(city)
-      .attr('class', 'city-ring')
-      .attr('r', dotRadius(city) + 5)
-      .attr('fill', 'none')
-      .attr('stroke', '#00e5ff')
-      .attr('stroke-width', 1)
-      .attr('opacity', 0);
+  // Click bare SVG background = close panel
+  svg.on('click', () => closeDetailPanel());
+}
 
-    // Pulse animation
+// Desired screen-pixel radius — independent of zoom
+function pingRadiusPx(city) {
+  const ev = LIVE.evpm[city.id] || city.evpm || 50;
+  return 6 + (ev / 337) * 8;   // 6–14 px on screen
+}
+
+function addCityPings(cities) {
+  cities.forEach(city => {
+    const [x, y] = mercator([city.lng, city.lat]);
+    const g = mapG.append('g').datum(city).attr('transform', `translate(${x},${y})`);
+
+    // Pulsing ring (orange) — radii always divided by currentK so they stay ~screen-px sized
+    const ring = g.append('circle').datum(city).attr('class','city-ring')
+      .attr('r', pingRadiusPx(city) / currentK)
+      .attr('fill','none').attr('stroke', PING_RING).attr('stroke-width',1.2).attr('opacity',0);
+
     function pulse() {
-      ring
-        .attr('r', dotRadius(city) + 2)
-        .attr('opacity', 0.8)
-        .transition()
-        .duration(2200)
-        .ease(d3.easeQuadOut)
-        .attr('r', dotRadius(city) + 22)
-        .attr('opacity', 0)
+      const k   = currentK;                       // snapshot k at pulse start
+      const rPx = pingRadiusPx(city);
+      ring.interrupt()
+        .attr('r', rPx / k).attr('opacity', .75)
+        .transition().duration(2100).ease(d3.easeQuadOut)
+        .attr('r', (rPx + 22) / k).attr('opacity', 0)  // ring expands ~22px on screen
         .on('end', pulse);
     }
-    // Stagger starts
     setTimeout(pulse, Math.random() * 2000);
 
-    // Core dot
-    g.append('circle')
-      .datum(city)
-      .attr('class', 'city-core')
-      .attr('r', dotRadius(city))
-      .attr('fill', '#00e5ff')
-      .attr('opacity', 0.92)
-      .attr('filter', 'url(#glow)');
+    // Core dot (orange)
+    g.append('circle').datum(city).attr('class','city-core')
+      .attr('r', pingRadiusPx(city) / currentK)
+      .attr('fill', PING_COLOR).attr('opacity',.92).attr('filter','url(#glow)');
 
-    // Invisible hit area
-    g.append('circle')
-      .attr('r', 22)
-      .attr('fill', 'transparent')
-      .attr('class', 'city-hit')
-      .on('mouseenter', (event) => onCityEnter(event, city))
-      .on('mousemove', onMouseMove)
+    // Hit area
+    g.append('circle').attr('r', 22).attr('fill','transparent')
+      .on('mouseenter', evt => onCityEnter(evt, city))
+      .on('mousemove',  onMouseMove)
       .on('mouseleave', onHoverEnd)
-      .on('click', (event) => { event.stopPropagation(); openCityModal(city); });
+      .on('click', evt => { evt.stopPropagation(); openCityModal(city); });
   });
-
-  // Click on map background = close panels
-  svg.on('click', () => closeDetailPanel());
-
-  populateSidebar();
-  startLiveUpdates();
 }
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// US DRILL-DOWN
+// ═══════════════════════════════════════════════════════════
+function enterUSView() {
+  currentView = 'us';
+
+  // Zoom to continental US with generous padding so all 48 states fit comfortably.
+  // Extra degrees of margin on every side to avoid clipping border states.
+  const sw = mercator([-130, 22]);   // beyond California/Texas SW
+  const ne = mercator([-60,  52]);   // beyond Maine/Minnesota NE
+  const bW = ne[0] - sw[0];
+  const bH = sw[1] - ne[1];         // y is inverted in Mercator screen coords
+  const k  = Math.min(10, 0.82 / Math.max(bW / W, bH / H));
+  const cx = (sw[0] + ne[0]) / 2;
+  const cy = (sw[1] + ne[1]) / 2;
+  const tx = W/2 - k * cx;
+  const ty = H/2 - k * cy;
+
+  svg.transition().duration(750).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity.translate(tx, ty).scale(k)
+  );
+
+  // Show state layer, hide region buttons, show back button
+  setTimeout(() => {
+    statesGeoLayer.style('display', 'block');
+    document.getElementById('world-controls').style.display = 'none';
+    document.getElementById('back-btn').style.display       = 'flex';
+    document.getElementById('us-banner').style.display      = 'block';
+  }, 200);
+}
+
+function exitUSView() {
+  currentView = 'world';
+  statesGeoLayer.style('display', 'none');
+  closeDetailPanel();
+
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-region="world"]').classList.add('active');
+
+  svg.transition().duration(650).call(zoomBehavior.transform, d3.zoomIdentity);
+
+  document.getElementById('world-controls').style.display = 'flex';
+  document.getElementById('back-btn').style.display       = 'none';
+  document.getElementById('us-banner').style.display      = 'none';
+}
+
+document.getElementById('back-btn').addEventListener('click', exitUSView);
+
+// ═══════════════════════════════════════════════════════════
 // TOOLTIP
-// ============================================================
-
-const ttEl       = document.getElementById('tooltip');
-const ttTitle    = document.getElementById('tt-title-text');
-const ttBadge    = document.getElementById('tt-badge');
-const ttBigWrap  = document.getElementById('tt-big-wrap');
-const ttBig      = document.getElementById('tt-big');
-const ttBigUnit  = document.getElementById('tt-big-unit');
-const ttMetrics  = document.getElementById('tt-metrics');
-const ttFooter   = document.getElementById('tt-footer');
-
+// ═══════════════════════════════════════════════════════════
+const ttEl = document.getElementById('tooltip');
 let ttVisible = false;
 
-function showTooltip() {
-  ttEl.classList.add('visible');
-  ttVisible = true;
+function showTT() { ttEl.classList.add('visible'); ttVisible = true; }
+function hideTT()  { ttEl.classList.remove('visible'); ttVisible = false; }
+
+function posTT(evt) {
+  const x=evt.clientX, y=evt.clientY;
+  const tw=ttEl.offsetWidth, th=ttEl.offsetHeight;
+  const vw=window.innerWidth, vh=window.innerHeight;
+  let l=x+16, t=y-th/2;
+  if(l+tw>vw-10) l=x-tw-16;
+  if(t<8) t=8;
+  if(t+th>vh-8) t=vh-th-8;
+  ttEl.style.left=l+'px'; ttEl.style.top=t+'px';
 }
 
-function hideTooltip() {
-  ttEl.classList.remove('visible');
-  ttVisible = false;
+function onMouseMove(evt) { if (ttVisible) posTT(evt); }
+function onHoverEnd()     { hideTT(); }
+
+function setTT(flag, name, mainVal, unit, footer) {
+  document.getElementById('tt-flag').textContent    = flag || '';
+  document.getElementById('tt-name-el').textContent = name;
+  document.getElementById('tt-val').textContent     = typeof mainVal === 'number' ? mainVal.toLocaleString() : mainVal;
+  document.getElementById('tt-unit').textContent    = unit   || 'stores covered';
+  document.getElementById('tt-footer').textContent  = footer || 'Click for details →';
+  document.getElementById('tt-label').textContent   = 'Stores Covered';
 }
 
-function positionTooltip(event) {
-  const x = event.clientX, y = event.clientY;
-  const tw = ttEl.offsetWidth, th = ttEl.offsetHeight;
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let left = x + 18, top = y - th / 2;
-  if (left + tw > vw - 10) left = x - tw - 18;
-  if (top < 8) top = 8;
-  if (top + th > vh - 8) top = vh - th - 8;
-  ttEl.style.left = left + 'px';
-  ttEl.style.top  = top  + 'px';
-}
-
-function onMouseMove(event) {
-  if (ttVisible) positionTooltip(event);
-}
-
-function onHoverEnd() {
-  hideTooltip();
-}
-
-function badgeClass(activity) {
-  return activity > 0.6 ? 'high' : activity > 0.35 ? 'medium' : 'low';
-}
-function badgeLabel(activity) {
-  return activity > 0.6 ? 'High' : activity > 0.35 ? 'Active' : 'Low';
-}
-function activityColor(activity) {
-  return activity > 0.6 ? 'var(--success)' : activity > 0.35 ? 'var(--accent2)' : 'var(--text3)';
-}
-
-function onCountryEnter(event, d) {
-  const c = COUNTRIES[+d.id];
+function onCountryEnter(evt, d) {
+  if (+d.id === 840) {
+    d3.select(evt.currentTarget).attr('fill','#0D52D6').attr('stroke','#1A6BFF').attr('stroke-width',1);
+    setTT('🇺🇸', 'United States', DATA.network.stores, 'stores covered', 'Click to explore by state →');
+    showTT(); posTT(evt); return;
+  }
+  const c = DATA.countries[String(d.id)];
   if (!c) return;
-
-  // Highlight
-  d3.select(event.currentTarget)
-    .attr('fill', d3.color(colorScale(c.activity)).brighter(0.8).formatHex())
-    .attr('stroke', 'var(--accent2)')
-    .attr('stroke-width', 1);
-
-  ttTitle.textContent = c.name;
-  ttBadge.textContent = badgeLabel(c.activity);
-  ttBadge.className = `tt-badge ${badgeClass(c.activity)}`;
-  ttBigWrap.style.display = 'none';
-
-  ttMetrics.innerHTML = `
-    <div class="tt-metric"><div class="tt-metric-val">${c.coolers.toLocaleString()}</div><div class="tt-metric-lbl">Coolers</div></div>
-    <div class="tt-metric"><div class="tt-metric-val">${c.stores.toLocaleString()}</div><div class="tt-metric-lbl">Stores</div></div>
-    <div class="tt-metric" style="grid-column:span 2">
-      <div class="tt-metric-val" style="color:var(--success)">${c.growth}</div>
-      <div class="tt-metric-lbl">Year-over-Year Growth</div>
-    </div>
-  `;
-  ttFooter.textContent = 'Click for full breakdown →';
-
-  showTooltip();
-  positionTooltip(event);
+  d3.select(evt.currentTarget)
+    .attr('fill', d3.color(worldColorScale(c.activity)).brighter(0.5).formatHex())
+    .attr('stroke','#1A6BFF').attr('stroke-width',.8);
+  setTT(c.flag, c.name, c.stores);
+  showTT(); posTT(evt);
 }
 
-function onCountryLeave(event, d) {
-  const c = COUNTRIES[+d.id];
-  d3.select(event.currentTarget)
-    .attr('fill', c ? colorScale(c.activity) : '#070f22')
-    .attr('stroke', '#1a3055')
-    .attr('stroke-width', 0.4);
-  hideTooltip();
+function onCountryLeave(evt, d) {
+  d3.select(evt.currentTarget)
+    .attr('fill', +d.id===840 ? '#1A6BFF' : (DATA.countries[String(d.id)] ? worldColorScale(DATA.countries[String(d.id)].activity) : '#D8E8F7'))
+    .attr('stroke','#C5DCF5').attr('stroke-width',.4);
+  hideTT();
 }
 
-function onCityEnter(event, city) {
-  ttTitle.textContent = '📍 ' + city.name;
-  ttBadge.textContent = 'Live';
-  ttBadge.className = 'tt-badge high';
-  ttBigWrap.style.display = 'block';
-  ttBig.textContent = LIVE.cityEvents[city.id];
-  ttBigUnit.textContent = 'events per minute';
-  ttMetrics.innerHTML = `
-    <div class="tt-metric"><div class="tt-metric-val">${city.coolers.toLocaleString()}</div><div class="tt-metric-lbl">Active Coolers</div></div>
-    <div class="tt-metric"><div class="tt-metric-val">${city.stores}</div><div class="tt-metric-lbl">Stores</div></div>
-    <div class="tt-metric"><div class="tt-metric-val" style="color:var(--danger)">${city.outOfStock}</div><div class="tt-metric-lbl">Out-of-Stock</div></div>
-    <div class="tt-metric"><div class="tt-metric-val" style="color:var(--warning)">${city.tempAlerts}</div><div class="tt-metric-lbl">Temp Alerts</div></div>
-  `;
-  ttFooter.textContent = 'Click for full city report →';
-  showTooltip();
-  positionTooltip(event);
-}
-
-// ============================================================
-// COUNTRY DETAIL PANEL
-// ============================================================
-
-let ctxCountryData = null;
-
-function onCountryClick(event, d) {
-  const c = COUNTRIES[+d.id];
+function onCountryClick(evt, d) {
+  evt.stopPropagation();
+  if (+d.id === 840) { enterUSView(); return; }
+  const c = DATA.countries[String(d.id)];
   if (!c) return;
-  event.stopPropagation();
-  ctxCountryData = c;
-  openDetailPanel(c);
+  ctxTarget = { c, d };
+  openCountryPanel(c, d);
 }
 
-function openDetailPanel(c) {
-  document.getElementById('panel-title').textContent = c.name;
-  document.getElementById('panel-sub').textContent = `${c.region.toUpperCase()} · ${badgeLabel(c.activity)} Activity`;
+function onCountryRightClick(evt, d) {
+  evt.preventDefault(); evt.stopPropagation();
+  const c = DATA.countries[String(d.id)];
+  if (!c) return;
+  ctxTarget = { c, d };
+  document.getElementById('ctx').style.left    = evt.clientX + 'px';
+  document.getElementById('ctx').style.top     = evt.clientY + 'px';
+  document.getElementById('ctx').style.display = 'block';
+}
 
-  const bars = Array.from({ length: 12 }, () =>
-    Math.round(c.activity * 100 + (Math.random() - 0.5) * 20)
-  );
-  const maxBar = Math.max(...bars);
+function onStateEnter(evt, d) {
+  const fips = String(d.id || '').padStart(2,'0');
+  const s = DATA.us_states[fips];
+  if (!s) return;
+  d3.select(evt.currentTarget)
+    .attr('fill', d3.color(stateColorScale(s.stores)).brighter(.45).formatHex())
+    .attr('stroke','#1A6BFF').attr('stroke-width',.9);
+  setTT('🏛️', s.name, s.stores);
+  showTT(); posTT(evt);
+}
 
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-kpi">
-      <div class="panel-kpi-label">Connected Coolers</div>
-      <div class="panel-kpi-value">${c.coolers.toLocaleString()}</div>
-      <div class="panel-kpi-delta">▲ ${c.growth} year-over-year</div>
-      <div class="mini-bars">
-        ${bars.map(h => `<div class="mini-bar" style="height:${Math.round(h / maxBar * 100)}%"></div>`).join('')}
-      </div>
+function onStateLeave(evt, d) {
+  const fips = String(d.id || '').padStart(2,'0');
+  const s = DATA.us_states[fips];
+  d3.select(evt.currentTarget)
+    .attr('fill', s ? stateColorScale(s.stores) : '#D8E8F7')
+    .attr('stroke','rgba(255,255,255,0.85)').attr('stroke-width',.7);
+  hideTT();
+}
+
+function onStateClick(evt, d) {
+  evt.stopPropagation();
+  const fips = String(d.id || '').padStart(2,'0');
+  const s = DATA.us_states[fips];
+  if (s) openStatePanel(s, fips);
+}
+
+function onCityEnter(evt, city) {
+  document.getElementById('tt-label').textContent = 'Live Activity';
+  setTT('📍', city.name, LIVE.evpm[city.id], 'events per minute',
+    `${city.stores} stores covered · Click for full report →`);
+  showTT(); posTT(evt);
+}
+
+// ═══════════════════════════════════════════════════════════
+// DETAIL PANELS
+// ═══════════════════════════════════════════════════════════
+function openCountryPanel(c, d) {
+  document.getElementById('dp-title').textContent = (c.flag||'') + ' ' + c.name;
+  document.getElementById('dp-sub').textContent   = c.region.toUpperCase() + ' · ' + (c.activity>.6?'High':c.activity>.35?'Active':'Low') + ' Activity';
+  const bars = Array.from({length:12}, () => Math.round(c.activity*100 + (Math.random()-.5)*20));
+  const mx = Math.max(...bars);
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-kpi">
+      <div class="dp-kpi-label">Stores Covered</div>
+      <div class="dp-kpi-val">${c.stores.toLocaleString()}</div>
+      <div class="dp-kpi-delta">▲ ${c.growth} year-over-year</div>
+      <div class="dp-mini-bars">${bars.map(h=>`<div class="dp-bar" style="height:${Math.round(h/mx*100)}%"></div>`).join('')}</div>
     </div>
-
-    <div class="panel-section-title">Coverage</div>
-    <div class="panel-kpi-grid">
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Stores</div>
-        <div class="panel-kpi-value">${c.stores.toLocaleString()}</div>
-      </div>
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Retailers</div>
-        <div class="panel-kpi-value">${Math.round(c.stores * 0.12)}</div>
-      </div>
+    <div class="dp-kpi">
+      <div class="dp-kpi-label">Connected Coolers</div>
+      <div class="dp-kpi-val">${c.coolers.toLocaleString()}</div>
+      <div class="dp-kpi-delta">~${Math.round(c.coolers/c.stores)} per store</div>
     </div>
-
-    <div class="panel-section-title">Today's Activity</div>
-    <div class="panel-kpi-grid">
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Images</div>
-        <div class="panel-kpi-value">${(Math.round(c.coolers * 228) / 1000).toFixed(0)}K</div>
-      </div>
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Door Opens</div>
-        <div class="panel-kpi-value">${Math.round(c.coolers * 26).toLocaleString()}</div>
-      </div>
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Out-of-Stock</div>
-        <div class="panel-kpi-value" style="color:var(--danger)">${Math.round(c.coolers * 0.08)}</div>
-      </div>
-      <div class="panel-kpi-sm">
-        <div class="panel-kpi-label">Temp Alerts</div>
-        <div class="panel-kpi-value" style="color:var(--warning)">${Math.round(c.coolers * 0.003)}</div>
-      </div>
+    <div class="dp-section-title">Today's Activity</div>
+    <div class="dp-grid">
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Images</div><div class="dp-kpi-val">${(Math.round(c.coolers*228)/1000).toFixed(0)}K</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Door Opens</div><div class="dp-kpi-val">${Math.round(c.coolers*26).toLocaleString()}</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Out-of-Stock</div><div class="dp-kpi-val" style="color:var(--danger)">${Math.round(c.coolers*.08)}</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Temp Alerts</div><div class="dp-kpi-val" style="color:var(--warning)">${Math.round(c.coolers*.003)}</div></div>
     </div>
-
-    <div class="panel-section-title">Uptime</div>
-    <div class="panel-kpi">
-      <div class="panel-kpi-label">Network Uptime (30d)</div>
-      <div class="panel-kpi-value">${(99 - (1 - c.activity) * 2).toFixed(2)}%</div>
-      <div class="panel-kpi-delta">▲ Above SLA threshold</div>
-    </div>
-  `;
-
+    <div class="dp-section-title">Network Uptime (30d)</div>
+    <div class="dp-kpi">
+      <div class="dp-kpi-label">Availability</div>
+      <div class="dp-kpi-val">${(99-(1-c.activity)*2).toFixed(2)}%</div>
+      <div class="dp-kpi-delta" style="color:var(--success)">✓ Above SLA</div>
+    </div>`;
   document.getElementById('detail-panel').classList.add('open');
 }
 
-function closeDetailPanel() {
-  document.getElementById('detail-panel').classList.remove('open');
+function openStatePanel(s, fips) {
+  const coolers = Math.round(s.stores * 3.2);
+  const growth  = '+' + (4 + Math.random()*10).toFixed(1) + '%';
+  const bars    = Array.from({length:12}, () => Math.round(s.stores + (Math.random()-.5)*s.stores*.15));
+  const mx      = Math.max(...bars);
+  document.getElementById('dp-title').textContent = '🏛️ ' + s.name;
+  document.getElementById('dp-sub').textContent   = 'United States · FIPS ' + fips;
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-kpi">
+      <div class="dp-kpi-label">Stores Covered</div>
+      <div class="dp-kpi-val">${s.stores.toLocaleString()}</div>
+      <div class="dp-kpi-delta">▲ ${growth} vs. last year</div>
+      <div class="dp-mini-bars">${bars.map(h=>`<div class="dp-bar" style="height:${Math.round(h/mx*100)}%"></div>`).join('')}</div>
+    </div>
+    <div class="dp-kpi">
+      <div class="dp-kpi-label">Connected Coolers</div>
+      <div class="dp-kpi-val">${coolers.toLocaleString()}</div>
+      <div class="dp-kpi-delta">~${Math.round(coolers/s.stores)} per store avg.</div>
+    </div>
+    <div class="dp-section-title">Today's Activity</div>
+    <div class="dp-grid">
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Images</div><div class="dp-kpi-val">${(Math.round(coolers*228)/1000).toFixed(0)}K</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Door Opens</div><div class="dp-kpi-val">${Math.round(coolers*26).toLocaleString()}</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Out-of-Stock</div><div class="dp-kpi-val" style="color:var(--danger)">${Math.round(coolers*.08)}</div></div>
+      <div class="dp-kpi-sm"><div class="dp-kpi-label">Temp Alerts</div><div class="dp-kpi-val" style="color:var(--warning)">${Math.round(coolers*.003)}</div></div>
+    </div>`;
+  document.getElementById('detail-panel').classList.add('open');
 }
 
-document.getElementById('panel-close').addEventListener('click', e => {
-  e.stopPropagation();
-  closeDetailPanel();
-});
+function closeDetailPanel() { document.getElementById('detail-panel').classList.remove('open'); }
+document.getElementById('dp-close').addEventListener('click', e => { e.stopPropagation(); closeDetailPanel(); });
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 // CITY MODAL
-// ============================================================
-
+// ═══════════════════════════════════════════════════════════
 function openCityModal(city) {
-  document.getElementById('modal-title').textContent = '📍 ' + city.name;
-  document.getElementById('modal-sub').textContent = city.country + ' · Real-time Intelligence Dashboard';
+  if (!city) return;
+  const hist = city.history, maxH = Math.max(...hist);
+  const netAvg = Math.round(DATA.cities.reduce((s,c)=>s+c.evpm,0)/DATA.cities.length);
 
-  const hist  = city.history;
-  const maxH  = Math.max(...hist);
-  const liveEv = LIVE.cityEvents[city.id];
+  document.getElementById('modal-title').textContent = '📍 ' + city.name;
+  document.getElementById('modal-sub').textContent   = city.countryCode + ' · Real-time City Dashboard';
 
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-live-card">
-      <div class="modal-live-label">Live Events per Minute</div>
-      <div class="modal-live-value" id="modal-live-val">${liveEv}</div>
-      <div class="modal-live-unit">events / min</div>
-      <div class="modal-sparkline" id="modal-sparkline">
-        ${hist.map((v, i) => `
-          <div class="sp-bar" title="${v} ev/min"
-            style="height:${Math.round(v/maxH*100)}%;
-                   background:${i === hist.length-1 ? 'var(--accent2)' : 'var(--accent)'};
-                   opacity:${i === hist.length-1 ? 1 : 0.45 + i*0.04}">
-          </div>`).join('')}
+    <div class="mlc">
+      <div class="mlc-label">Live Events per Minute</div>
+      <div class="mlc-val" id="mlc-val">${LIVE.evpm[city.id]}</div>
+      <div class="mlc-unit">events / min</div>
+      <div class="mlc-sparkline">
+        ${hist.map((v,i)=>`<div class="sp-bar" title="${v}"
+          style="height:${Math.round(v/maxH*100)}%;
+                 background:${i===hist.length-1?'rgba(255,255,255,.95)':'rgba(255,255,255,.38)'};
+                 opacity:${.3+i*.06}"></div>`).join('')}
       </div>
-      <div style="font-size:9px;color:var(--text3);margin-top:6px;">Last 12 readings (most recent →)</div>
+      <div style="font-size:9px;opacity:.6;margin-top:5px;">Last 12 readings (most recent →)</div>
     </div>
-
     <div class="modal-grid">
-      <div class="modal-metric"><div class="mm-label">Coolers</div><div class="mm-value">${city.coolers.toLocaleString()}</div></div>
-      <div class="modal-metric"><div class="mm-label">Stores</div><div class="mm-value">${city.stores}</div></div>
-      <div class="modal-metric"><div class="mm-label">Retailers</div><div class="mm-value">${city.retailers}</div></div>
-      <div class="modal-metric"><div class="mm-label">Door Opens</div><div class="mm-value">${city.doorOpens.toLocaleString()}</div></div>
-      <div class="modal-metric"><div class="mm-label">Images / hr</div><div class="mm-value">${(city.imagesPerHour/1000).toFixed(1)}K</div></div>
-      <div class="modal-metric"><div class="mm-label">Region Rank</div><div class="mm-value">#${rankCity(city.id)}</div></div>
-      <div class="modal-metric"><div class="mm-label">Out-of-Stock</div><div class="mm-value" style="color:var(--danger)">${city.outOfStock}</div></div>
-      <div class="modal-metric"><div class="mm-label">Temp Alerts</div><div class="mm-value" style="color:var(--warning)">${city.tempAlerts}</div></div>
-      <div class="modal-metric"><div class="mm-label">Compliance</div><div class="mm-value" style="color:var(--success)">98.7%</div></div>
+      <div class="modal-metric"><div class="mm-label">Stores</div><div class="mm-val">${city.stores}</div></div>
+      <div class="modal-metric"><div class="mm-label">Coolers</div><div class="mm-val">${city.coolers.toLocaleString()}</div></div>
+      <div class="modal-metric"><div class="mm-label">Retailers</div><div class="mm-val">${city.retailers}</div></div>
+      <div class="modal-metric"><div class="mm-label">Door Opens</div><div class="mm-val">${city.doorOpens.toLocaleString()}</div></div>
+      <div class="modal-metric"><div class="mm-label">Images/hr</div><div class="mm-val">${(city.imgPerHr/1000).toFixed(1)}K</div></div>
+      <div class="modal-metric"><div class="mm-label">Network Rank</div><div class="mm-val">#${[...DATA.cities].sort((a,b)=>b.evpm-a.evpm).findIndex(c=>c.id===city.id)+1}</div></div>
+      <div class="modal-metric"><div class="mm-label">Out-of-Stock</div><div class="mm-val" style="color:var(--danger)">${city.oos}</div></div>
+      <div class="modal-metric"><div class="mm-label">Temp Alerts</div><div class="mm-val" style="color:var(--warning)">${city.tempAlerts}</div></div>
+      <div class="modal-metric"><div class="mm-label">Uptime</div><div class="mm-val" style="color:var(--success)">98.7%</div></div>
     </div>
-
-    <div class="modal-section-title">Top Brands in this City</div>
-    <div class="modal-brands">
-      ${city.brands.map(b => `<span class="modal-brand-tag">${b}</span>`).join('')}
-    </div>
-
+    <div class="modal-section-title">Top Brands</div>
+    <div class="modal-brands">${city.brands.map(b=>`<span class="modal-brand-tag">${b}</span>`).join('')}</div>
     <div class="modal-section-title">Performance vs. Network Average</div>
-    ${perfBars(city)}
-  `;
+    ${[
+      {label:'Events/min', val:city.evpm,    avg:netAvg, max:337 },
+      {label:'Stores',     val:city.stores,  avg:Math.round(DATA.cities.reduce((s,c)=>s+c.stores,0)/DATA.cities.length), max:89},
+      {label:'Coolers',    val:city.coolers, avg:Math.round(DATA.cities.reduce((s,c)=>s+c.coolers,0)/DATA.cities.length),max:1243},
+    ].map(r=>`
+      <div class="perf-row">
+        <div class="perf-top"><span>${r.label}</span><span><strong>${r.val.toLocaleString()}</strong> vs avg ${r.avg}</span></div>
+        <div class="perf-track">
+          <div class="perf-fill" style="width:${Math.round(r.val/r.max*100)}%"></div>
+          <div class="perf-avg" style="left:${Math.round(r.avg/r.max*100)}%"></div>
+        </div>
+      </div>`).join('')}`;
 
   document.getElementById('modal-overlay').classList.add('open');
 
-  // Animate live value in modal
-  const liveValEl = document.getElementById('modal-live-val');
-  const modalInterval = setInterval(() => {
-    if (!document.getElementById('modal-overlay').classList.contains('open')) {
-      clearInterval(modalInterval);
-      return;
-    }
-    const drift = Math.round((Math.random() - 0.5) * 8);
-    const cur = parseInt(liveValEl.textContent);
-    liveValEl.textContent = Math.max(1, cur + drift);
-  }, 1200);
+  const el = document.getElementById('mlc-val');
+  const iv = setInterval(() => {
+    if (!document.getElementById('modal-overlay').classList.contains('open')) { clearInterval(iv); return; }
+    el.textContent = Math.max(5, parseInt(el.textContent) + Math.round((Math.random()-.48)*10));
+  }, 1300);
 }
 
-function rankCity(id) {
-  const sorted = [...CITIES].sort((a, b) => b.eventsPerMin - a.eventsPerMin);
-  return sorted.findIndex(c => c.id === id) + 1;
-}
-
-function perfBars(city) {
-  const netAvg = Math.round(CITIES.reduce((s, c) => s + c.eventsPerMin, 0) / CITIES.length);
-  const metrics = [
-    { label: 'Events/min', city: city.eventsPerMin, avg: netAvg, max: 337 },
-    { label: 'Coolers', city: city.coolers, avg: Math.round(CITIES.reduce((s,c)=>s+c.coolers,0)/CITIES.length), max: 1243 },
-    { label: 'Stores', city: city.stores, avg: Math.round(CITIES.reduce((s,c)=>s+c.stores,0)/CITIES.length), max: 89 },
-  ];
-  return metrics.map(m => `
-    <div style="margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
-        <span>${m.label}</span><span style="color:var(--text2)">${m.city.toLocaleString()} <span style="color:var(--text3)">vs avg ${m.avg}</span></span>
-      </div>
-      <div style="height:6px;background:var(--border);border-radius:3px;position:relative;">
-        <div style="position:absolute;left:0;top:0;height:100%;background:var(--accent);width:${Math.round(m.city/m.max*100)}%;border-radius:3px;"></div>
-        <div style="position:absolute;top:-2px;height:10px;width:2px;background:var(--text3);left:${Math.round(m.avg/m.max*100)}%;border-radius:1px;" title="Network average"></div>
-      </div>
-    </div>
-  `).join('');
-}
-
-document.getElementById('modal-close').addEventListener('click', () => {
-  document.getElementById('modal-overlay').classList.remove('open');
-});
+document.getElementById('modal-close').addEventListener('click', () =>
+  document.getElementById('modal-overlay').classList.remove('open'));
 document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-overlay'))
     document.getElementById('modal-overlay').classList.remove('open');
 });
 
-// ============================================================
-// CONTEXT MENU (right-click on country)
-// ============================================================
-
-const ctxMenu = document.getElementById('ctx-menu');
-let ctxTarget = null;
-
-function onCountryRightClick(event, d) {
-  event.preventDefault();
-  event.stopPropagation();
-  const c = COUNTRIES[+d.id];
-  if (!c) return;
-  ctxTarget = { c, d };
-  ctxMenu.style.display = 'block';
-  ctxMenu.style.left = event.clientX + 'px';
-  ctxMenu.style.top  = event.clientY + 'px';
-}
-
-document.getElementById('ctx-details').addEventListener('click', () => {
-  if (ctxTarget) openDetailPanel(ctxTarget.c);
-  ctxMenu.style.display = 'none';
+// ═══════════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════════
+document.getElementById('ctx-detail').addEventListener('click', () => {
+  if (ctxTarget?.c) openCountryPanel(ctxTarget.c, ctxTarget.d);
+  document.getElementById('ctx').style.display = 'none';
 });
-
-document.getElementById('ctx-zoom').addEventListener('click', () => {
-  if (ctxTarget) zoomToCountry(ctxTarget.d);
-  ctxMenu.style.display = 'none';
-});
-
-document.getElementById('ctx-copy').addEventListener('click', () => {
-  if (ctxTarget) {
-    const c = ctxTarget.c;
-    const text = `${c.name}: ${c.coolers} coolers, ${c.stores} stores, growth ${c.growth}`;
-    navigator.clipboard?.writeText(text).catch(() => {});
+document.getElementById('ctx-zoom-to').addEventListener('click', () => {
+  if (ctxTarget?.d) {
+    const [[x0,y0],[x1,y1]] = mercatorPath.bounds(ctxTarget.d);
+    const k = Math.min(10, .85/Math.max((x1-x0)/W,(y1-y0)/H));
+    svg.transition().duration(750).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate(W/2-k*((x0+x1)/2), H/2-k*((y0+y1)/2)).scale(k));
   }
-  ctxMenu.style.display = 'none';
+  document.getElementById('ctx').style.display = 'none';
 });
+document.getElementById('ctx-copy').addEventListener('click', () => {
+  if (ctxTarget?.c) {
+    const c = ctxTarget.c;
+    navigator.clipboard?.writeText(`${c.name}: ${c.stores} stores, ${c.coolers} coolers, growth ${c.growth}`).catch(()=>{});
+  }
+  document.getElementById('ctx').style.display = 'none';
+});
+document.addEventListener('click', () => document.getElementById('ctx').style.display = 'none');
 
-document.addEventListener('click', () => { ctxMenu.style.display = 'none'; });
-
-function zoomToCountry(d) {
-  const bounds = pathGen.bounds(d);
-  const [[x0, y0], [x1, y1]] = bounds;
-  const bW = x1 - x0, bH = y1 - y0;
-  const scale = Math.min(8, 0.85 / Math.max(bW / W, bH / H));
-  const tx = W / 2 - scale * (x0 + bW / 2);
-  const ty = H / 2 - scale * (y0 + bH / 2);
-
-  svg.transition().duration(750).call(
-    zoomBehavior.transform,
-    d3.zoomIdentity.translate(tx, ty).scale(scale)
-  );
-}
-
-// ============================================================
-// FILTER BUTTONS / ZOOM TO REGION
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// FILTER BUTTONS + ZOOM CONTROLS
+// ═══════════════════════════════════════════════════════════
+const REGION_ZOOM = {
+  americas: { k: 1.7, center: [-85,  8] },
+  europe:   { k: 3.4, center: [ 15, 50] },
+  apac:     { k: 1.9, center: [115, 12] },
+};
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (currentView === 'us') exitUSView();
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    zoomToRegion(btn.dataset.region);
+    const r = REGION_ZOOM[btn.dataset.region];
+    if (!r) {
+      svg.transition().duration(700).call(zoomBehavior.transform, d3.zoomIdentity);
+      return;
+    }
+    const [px,py] = mercator(r.center);
+    svg.transition().duration(750).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate(W/2, H/2).scale(r.k).translate(-px, -py));
   });
 });
 
-function zoomToRegion(region) {
-  const params = REGION_VIEWS[region];
-  if (!params) return;
-
-  let scale, tx, ty;
-
-  if (region === 'world') {
-    scale = 1;
-    tx = 0; ty = 0;
-    svg.transition().duration(800).call(
-      zoomBehavior.transform,
-      d3.zoomIdentity
-    );
-    return;
-  }
-
-  const [lng, lat] = params.center;
-  const [px, py] = projection([lng, lat]);
-  scale = Math.round(baseScale * params.scale * (W / 800));
-  // compute what zoom level matches this visual scale
-  const k = (baseScale * params.scale * 6.3);
-  tx = W / 2 - k * px / baseScale;
-  ty = H / 2 - k * py / baseScale;
-
-  // Simpler: compute pixel coords at current projection, zoom to them
-  const kFactor = params.scale * (W / 130);
-  svg.transition().duration(800).call(
-    zoomBehavior.transform,
-    d3.zoomIdentity
-      .translate(W / 2, H / 2)
-      .scale(kFactor)
-      .translate(-projection([lng, lat])[0], -projection([lng, lat])[1])
-  );
-}
-
-// Manual zoom buttons
-document.getElementById('zoom-in').addEventListener('click', () => {
-  svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
-});
-document.getElementById('zoom-out').addEventListener('click', () => {
-  svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.67);
-});
+document.getElementById('zoom-in').addEventListener('click',  () => svg.transition().duration(280).call(zoomBehavior.scaleBy, 1.5));
+document.getElementById('zoom-out').addEventListener('click', () => svg.transition().duration(280).call(zoomBehavior.scaleBy, .67));
 document.getElementById('zoom-reset').addEventListener('click', () => {
+  if (currentView === 'us') { exitUSView(); return; }
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-region="world"]').classList.add('active');
   svg.transition().duration(600).call(zoomBehavior.transform, d3.zoomIdentity);
 });
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 // SEARCH
-// ============================================================
-
+// ═══════════════════════════════════════════════════════════
 const searchInput   = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
 
 searchInput.addEventListener('input', () => {
+  if (!DATA) return;
   const q = searchInput.value.toLowerCase().trim();
   if (!q) { searchResults.style.display = 'none'; return; }
 
-  const cityMatches = CITIES.filter(c =>
-    c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)
-  );
-  const countryMatches = Object.values(COUNTRIES).filter(c =>
-    c.name.toLowerCase().includes(q)
-  );
+  const cityHits    = DATA.cities.filter(c => c.name.toLowerCase().includes(q));
+  const countryHits = Object.values(DATA.countries).filter(c => c.name.toLowerCase().includes(q)).slice(0,5);
+  const stateHits   = Object.entries(DATA.us_states).filter(([,s]) => s.name.toLowerCase().includes(q)).slice(0,4);
 
-  if (cityMatches.length === 0 && countryMatches.length === 0) {
-    searchResults.style.display = 'none';
-    return;
-  }
+  if (!cityHits.length && !countryHits.length && !stateHits.length) { searchResults.style.display='none'; return; }
 
   searchResults.innerHTML = [
-    ...cityMatches.map(c => `
-      <div class="search-result-item" data-type="city" data-id="${c.id}">
-        📍 ${c.name}
-        <span class="sri-events">${c.eventsPerMin} ev/min</span>
-      </div>`),
-    ...countryMatches.slice(0, 4).map(c => `
-      <div class="search-result-item" data-type="country" data-name="${c.name}">
-        🗺 ${c.name}
-        <span class="sri-events">${c.coolers} coolers</span>
-      </div>`),
+    ...cityHits.map(c    => `<div class="sri" data-type="city"    data-id="${c.id}">📍 ${c.name}<span class="sri-right">${c.evpm} ev/min</span></div>`),
+    ...countryHits.map(c => `<div class="sri" data-type="country" data-name="${c.name}">${c.flag} ${c.name}<span class="sri-right">${c.stores} stores</span></div>`),
+    ...stateHits.map(([fips,s]) => `<div class="sri" data-type="state" data-fips="${fips}">🏛️ ${s.name}, US<span class="sri-right">${s.stores} stores</span></div>`),
   ].join('');
-
   searchResults.style.display = 'block';
 
-  searchResults.querySelectorAll('.search-result-item').forEach(el => {
+  searchResults.querySelectorAll('.sri').forEach(el => {
     el.addEventListener('click', () => {
-      const type = el.dataset.type;
-      if (type === 'city') {
-        const city = CITIES.find(c => c.id === el.dataset.id);
+      const t = el.dataset.type;
+      if (t === 'city') {
+        const city = DATA.cities.find(c => c.id === el.dataset.id);
         if (city) {
-          flyToCity(city);
-          setTimeout(() => openCityModal(city), 600);
+          if (currentView === 'us') exitUSView();
+          const [px,py] = mercator([city.lng, city.lat]);
+          svg.transition().duration(700).call(zoomBehavior.transform,
+            d3.zoomIdentity.translate(W/2, H/2).scale(5).translate(-px, -py));
+          setTimeout(() => openCityModal(city), 650);
         }
-      } else {
-        const cData = Object.values(COUNTRIES).find(c => c.name === el.dataset.name);
-        if (cData) openDetailPanel(cData);
+      } else if (t === 'country') {
+        const c = Object.values(DATA.countries).find(x => x.name === el.dataset.name);
+        if (c) { if (currentView==='us') exitUSView(); setTimeout(() => openCountryPanel(c, null), 400); }
+      } else if (t === 'state') {
+        const fips = el.dataset.fips;
+        const s = DATA.us_states[fips];
+        if (s) {
+          if (currentView !== 'us') enterUSView();
+          setTimeout(() => openStatePanel(s, fips), 800);
+        }
       }
       searchResults.style.display = 'none';
       searchInput.value = '';
     });
   });
 });
-
 searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    searchResults.style.display = 'none';
-    searchInput.blur();
-  }
+  if (e.key === 'Escape') { searchResults.style.display='none'; searchInput.blur(); }
 });
-
 document.addEventListener('click', e => {
-  if (!e.target.closest('.map-search')) searchResults.style.display = 'none';
+  if (!e.target.closest('.map-search')) searchResults.style.display='none';
 });
 
-function flyToCity(city) {
-  const [px, py] = projection([city.lng, city.lat]);
-  svg.transition().duration(700).call(
-    zoomBehavior.transform,
-    d3.zoomIdentity
-      .translate(W / 2, H / 2)
-      .scale(4)
-      .translate(-px, -py)
-  );
-}
-
-// ============================================================
-// SIDEBAR
-// ============================================================
-
-function populateSidebar() {
-  const sorted = [...CITIES].sort((a, b) => b.eventsPerMin - a.eventsPerMin);
-  const maxEv  = sorted[0].eventsPerMin;
-  const list   = document.getElementById('city-list');
-
-  list.innerHTML = sorted.map(city => `
-    <div class="city-row" onclick="openCityModal(CITIES.find(c=>c.id==='${city.id}'))">
-      <div class="city-row-top">
-        <span class="city-name">${city.name}</span>
-        <span class="city-events" id="sb-ev-${city.id}">${city.eventsPerMin} <span>ev/min</span></span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="sb-bar-${city.id}" style="width:${Math.round(city.eventsPerMin/maxEv*100)}%"></div>
-      </div>
-    </div>
-  `).join('');
-
-  document.getElementById('brands-list').innerHTML =
-    BRANDS.map(b => `<span class="brand-tag">${b}</span>`).join('');
-}
-
-// ============================================================
-// LIVE DATA SIMULATION
-// ============================================================
-
-let updateAge = 0;
+// ═══════════════════════════════════════════════════════════
+// LIVE UPDATES
+// ═══════════════════════════════════════════════════════════
+let ageS = 0;
 
 function startLiveUpdates() {
-  // Fast ticker: every second
   setInterval(() => {
-    updateAge++;
-    const ageStr = updateAge < 60 ? `${updateAge}s` : `${Math.floor(updateAge/60)}m ${updateAge%60}s`;
-    document.getElementById('update-age').textContent = ageStr;
-
-    // Door opens accumulate
-    LIVE.doorOpens += Math.round(Math.random() * 8 + 2);
+    ageS++;
+    document.getElementById('update-age').textContent = ageS < 60 ? ageS+'s' : Math.floor(ageS/60)+'m '+ageS%60+'s';
+    LIVE.doorOpens += Math.round(Math.random()*8+2);
     document.getElementById('sb-doors').textContent = LIVE.doorOpens.toLocaleString();
   }, 1000);
 
-  // Medium ticker: every 2.5s - fluctuate events/min per city
   setInterval(() => {
-    CITIES.forEach(city => {
-      const drift = Math.round((Math.random() - 0.48) * 12);
-      LIVE.cityEvents[city.id] = Math.max(10, city.eventsPerMin + drift + Math.round(Math.sin(Date.now()/5000)*10));
-
-      const el = document.getElementById(`sb-ev-${city.id}`);
-      if (el) el.firstChild.textContent = LIVE.cityEvents[city.id] + ' ';
-
-      const barEl = document.getElementById(`sb-bar-${city.id}`);
-      const maxEv = Math.max(...CITIES.map(c => LIVE.cityEvents[c.id]));
-      if (barEl) barEl.style.width = Math.round(LIVE.cityEvents[city.id] / maxEv * 100) + '%';
+    const maxEv = Math.max(...DATA.cities.map(c => LIVE.evpm[c.id]));
+    DATA.cities.forEach(city => {
+      LIVE.evpm[city.id] = Math.max(5, city.evpm + Math.round((Math.random()-.48)*10 + Math.sin(Date.now()/6000)*6));
+      const el  = document.getElementById(`sbev-${city.id}`);
+      const bar = document.getElementById(`sbbar-${city.id}`);
+      if (el)  { el.childNodes[0].textContent = LIVE.evpm[city.id] + ' '; }
+      if (bar) { bar.style.width = Math.round(LIVE.evpm[city.id]/maxEv*100) + '%'; }
     });
-
-    // Update city core dot sizes
-    mapG.selectAll('.city-core').attr('r', function(d) {
-      return d ? dotRadius(d) : 6;
-    });
-
-    // Temp alerts random walk
-    LIVE.tempAlerts = Math.max(0, LIVE.tempAlerts + Math.round((Math.random() - 0.5) * 2));
+    LIVE.tempAlerts = Math.max(0, LIVE.tempAlerts + Math.round((Math.random()-.5)*2));
+    LIVE.outOfStock = Math.max(0, LIVE.outOfStock + Math.round((Math.random()-.45)*5));
     document.getElementById('sb-temp').textContent = LIVE.tempAlerts;
-
-    // OOS slight fluctuation
-    LIVE.outOfStock = Math.max(0, LIVE.outOfStock + Math.round((Math.random() - 0.45) * 5));
-    document.getElementById('sb-oos').textContent = LIVE.outOfStock.toLocaleString();
+    document.getElementById('sb-oos').textContent  = LIVE.outOfStock.toLocaleString();
+    if (mapG) mapG.selectAll('.city-core').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
   }, 2500);
 
-  // Slow ticker: every 8s - update header KPIs
   setInterval(() => {
-    LIVE.connectedCoolers += Math.round(Math.random() * 3);
-    document.getElementById('hkpi-coolers').textContent = LIVE.connectedCoolers.toLocaleString();
-
-    if (Math.random() > 0.7) {
-      LIVE.stores += 1;
-      document.getElementById('hkpi-stores').textContent = LIVE.stores.toLocaleString();
-    }
-
-    // Update sidebar last updated
-    updateAge = 0;
+    LIVE.connectedCoolers += Math.round(Math.random()*3);
+    document.getElementById('hk-coolers').textContent = LIVE.connectedCoolers.toLocaleString()+'+';
+    if (Math.random()>.6) { LIVE.stores++; document.getElementById('hk-stores').textContent = LIVE.stores.toLocaleString()+'+'; }
+    ageS = 0;
     document.getElementById('update-age').textContent = '0s';
-    document.getElementById('sb-last-updated').textContent = 'Just updated';
-    setTimeout(() => {
-      document.getElementById('sb-last-updated').textContent = 'A moment ago';
-    }, 2000);
+    document.getElementById('sb-updated-text').textContent = 'Just updated';
+    setTimeout(() => document.getElementById('sb-updated-text').textContent = 'A moment ago', 1800);
   }, 8000);
 }
 
-// ============================================================
-// WINDOW RESIZE
-// ============================================================
-
-window.addEventListener('resize', () => {
-  // Simple refresh - could be more sophisticated
-  const w = mapEl.clientWidth;
-  const h = mapEl.clientHeight;
-  svg.attr('width', w).attr('height', h);
+// ═══════════════════════════════════════════════════════════
+// GO
+// ═══════════════════════════════════════════════════════════
+bootstrap().catch(err => {
+  console.error('Bootstrap failed:', err);
+  document.getElementById('loading').innerHTML = `
+    <div style="color:#E83B52;font-size:14px;text-align:center;padding:24px;max-width:380px;">
+      ⚠ Failed to load.<br><br>
+      <small style="color:#8099C0;line-height:1.6;">
+        Open via a local server so <code>data.json</code> can be fetched:<br>
+        <code style="background:#EEF4FF;padding:2px 6px;border-radius:4px;">npx serve .</code><br>
+        or <code style="background:#EEF4FF;padding:2px 6px;border-radius:4px;">python3 -m http.server</code>
+      </small>
+    </div>`;
 });
-
-// ============================================================
-// GLOBALS (for sidebar onclick attrs)
-// ============================================================
-window.CITIES         = CITIES;
-window.openCityModal  = openCityModal;
-
-// ============================================================
-// START
-// ============================================================
-initMap();
 </script>
 </body>
 </html>
