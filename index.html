@@ -599,6 +599,8 @@ let LIVE = {};
 
 let svg, mapG, mercator, mercatorPath, zoomBehavior;
 let statesGeoLayer = null;
+let usStatesGeoRef = null;
+let hoveredFeature  = null;
 let W, H;
 
 const PING_COLOR = '#FF6A00';
@@ -614,7 +616,7 @@ const worldColorScale = d3.scaleLinear()
 
 const stateColorScale = d3.scaleLinear()
   .domain([0, 50, 150, 350])
-  .range(['#E0EDFF','#93C0EF','#4B87E0','#1A6BFF']);
+  .range(['#BDD5F0','#6BA4D8','#2C72B8','#1A4E9E']);
 
 // ═══════════════════════════════════════════════════════════
 // BOOTSTRAP
@@ -627,6 +629,12 @@ async function bootstrap() {
   ]);
 
   DATA = appData;
+
+  // Pre-build name→state lookup so we can resolve features even when d.id is absent
+  DATA._stateByName = {};
+  Object.values(DATA.us_states).forEach(s => { DATA._stateByName[s.name] = s; });
+  DATA._stateByName['District of Columbia'] = DATA.us_states['11'];  // name variant
+
   LIVE = {
     doorOpens:        DATA.network.doorOpenEvents,
     tempAlerts:       DATA.network.temperatureAlerts,
@@ -757,28 +765,49 @@ function initMap(worldAtlas, usStatesGeo) {
   // ── US States layer — same Mercator projection, hidden until drill-down ──
   statesGeoLayer = mapG.append('g').attr('class','us-states-layer').style('display','none');
 
+  // Virginia (FIPS 51) has a CCW exterior ring, so D3+Mercator draws it as an inverted fill
+  // that covers the whole canvas. Fix: render Virginia FIRST so it sits at the back of the
+  // SVG z-stack — every other state renders on top and remains visible.
+  // For geoContains, put Virginia LAST so every other state is matched before Virginia's
+  // over-broad CCW ring gets a chance to match (Virginia then acts as a fallback for its own territory).
+  const virginiaFeat = usStatesGeo.features.find(
+    f => String(f.id || '') === '51' || f.properties?.name === 'Virginia'
+  );
+  const otherFeats = usStatesGeo.features.filter(f => f !== virginiaFeat);
+
+  const renderFeatures = virginiaFeat ? [virginiaFeat, ...otherFeats] : usStatesGeo.features;
+  usStatesGeoRef       = virginiaFeat ? [...otherFeats, virginiaFeat] : usStatesGeo.features;
+
   statesGeoLayer.selectAll('.s-path')
-    .data(usStatesGeo.features)
+    .data(renderFeatures)
     .enter().append('path')
     .attr('class','s-path')
     .attr('d', mercatorPath)
     .attr('fill', d => {
-      // PublicaMundi stores FIPS in properties.id (or sometimes as a number)
-      const fips = String(d.id || '').padStart(2,'0');
-      const s = DATA.us_states[fips];
-      return s ? stateColorScale(s.stores) : '#D8E8F7';
+      const s = stateForFeature(d);
+      return s ? stateColorScale(s.stores) : '#BDD5F0';
     })
-    .attr('stroke','rgba(255,255,255,0.85)').attr('stroke-width', .7)
-    .on('mouseenter', onStateEnter)
-    .on('mousemove',  onMouseMove)
-    .on('mouseleave', onStateLeave)
-    .on('click',      onStateClick);
+    .attr('stroke','#fff').attr('stroke-width', 0.7);
+
+  // Topology only for stateBorders mesh — deep-clone to prevent topology() mutating renderFeatures
+  const geoClone = { type: 'FeatureCollection', features: JSON.parse(JSON.stringify(renderFeatures)) };
+  const topoData  = topojson.topology({ states: geoClone });
+  const stateBorders = topojson.mesh(topoData, topoData.objects.states, (a, b) => a !== b);
+  statesGeoLayer.append('path').datum(stateBorders).attr('d', mercatorPath)
+    .attr('fill','none').attr('stroke','#fff').attr('stroke-width',.7).attr('pointer-events','none');
+
+  // Container-level events — geoContains handles which state is under the cursor
+  statesGeoLayer
+    .on('mousemove',  onStateLayerMove)
+    .on('mouseleave', onStateLayerLeave)
+    .on('click',      onStateLayerClick);
 
   // ── City pings ──
   addCityPings(DATA.cities);
 
-  // Click bare SVG background = close panel
+  // Click bare SVG background = close panel; leaving map always clears tooltip
   svg.on('click', () => closeDetailPanel());
+  svg.on('mouseleave', () => hideTT());
 }
 
 // Desired screen-pixel radius — independent of zoom
@@ -828,6 +857,9 @@ function addCityPings(cities) {
 function enterUSView() {
   currentView = 'us';
 
+  // Lighten the US country path so every state fill (light → dark blue) contrasts against it
+  mapG.select('.c-path[data-id="840"]').attr('fill', '#F0F6FF').attr('stroke', 'none');
+
   // Zoom to continental US with generous padding so all 48 states fit comfortably.
   // Extra degrees of margin on every side to avoid clipping border states.
   const sw = mercator([-130, 22]);   // beyond California/Texas SW
@@ -858,6 +890,9 @@ function exitUSView() {
   currentView = 'world';
   statesGeoLayer.style('display', 'none');
   closeDetailPanel();
+
+  // Restore US country fill
+  mapG.select('.c-path[data-id="840"]').attr('fill', '#1A6BFF').attr('stroke', '#C5DCF5');
 
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-region="world"]').classList.add('active');
@@ -944,11 +979,24 @@ function onCountryRightClick(evt, d) {
   document.getElementById('ctx').style.display = 'block';
 }
 
+function stateForFeature(d) {
+  const fips = String(d.id || '').padStart(2, '0');
+  return DATA.us_states[fips] || DATA._stateByName[d.properties?.name] || null;
+}
+
+function stateFipsForFeature(d) {
+  const byId = String(d.id || '').padStart(2, '0');
+  if (DATA.us_states[byId]) return byId;
+  const s = DATA._stateByName[d.properties?.name];
+  return s ? Object.keys(DATA.us_states).find(k => DATA.us_states[k] === s) || byId : byId;
+}
+
 function onStateEnter(evt, d) {
-  const fips = String(d.id || '').padStart(2,'0');
-  const s = DATA.us_states[fips];
-  if (!s) return;
-  d3.select(evt.currentTarget)
+  const s = stateForFeature(d);
+  if (!s) { hideTT(); return; }
+  const el = evt.currentTarget;
+  el.parentNode.appendChild(el);  // bring above stateBorders mesh so full border is visible
+  d3.select(el)
     .attr('fill', d3.color(stateColorScale(s.stores)).brighter(.45).formatHex())
     .attr('stroke','#1A6BFF').attr('stroke-width',.9);
   setTT('🏛️', s.name, s.stores);
@@ -956,18 +1004,75 @@ function onStateEnter(evt, d) {
 }
 
 function onStateLeave(evt, d) {
-  const fips = String(d.id || '').padStart(2,'0');
-  const s = DATA.us_states[fips];
+  const s = stateForFeature(d);
   d3.select(evt.currentTarget)
-    .attr('fill', s ? stateColorScale(s.stores) : '#D8E8F7')
-    .attr('stroke','rgba(255,255,255,0.85)').attr('stroke-width',.7);
+    .attr('fill', s ? stateColorScale(s.stores) : '#BDD5F0')
+    .attr('stroke','#fff').attr('stroke-width',.7);
   hideTT();
 }
 
 function onStateClick(evt, d) {
   evt.stopPropagation();
-  const fips = String(d.id || '').padStart(2,'0');
-  const s = DATA.us_states[fips];
+  const s = stateForFeature(d);
+  const fips = stateFipsForFeature(d);
+  if (s) openStatePanel(s, fips);
+}
+
+// Container-level handlers — use geoContains to find the state under the cursor
+function featureAtPoint(pt) {
+  if (!usStatesGeoRef) return null;
+  return usStatesGeoRef.find(f => d3.geoContains(f, pt)) || null;
+}
+
+function setStateHighlight(f) {
+  if (hoveredFeature === f) return;
+  if (hoveredFeature) {
+    const s = stateForFeature(hoveredFeature);
+    statesGeoLayer.selectAll('.s-path')
+      .filter(d => d === hoveredFeature)
+      .attr('fill', s ? stateColorScale(s.stores) : '#BDD5F0')
+      .attr('stroke', '#fff').attr('stroke-width', .7);
+  }
+  hoveredFeature = f;
+  if (f) {
+    const s = stateForFeature(f);
+    if (s) {
+      const sel = statesGeoLayer.selectAll('.s-path').filter(d => d === f);
+      // Don't raise Virginia: its inverted fill covers the entire canvas when brought to front
+      if (String(f.id || '') !== '51') sel.raise();
+      sel.attr('fill', d3.color(stateColorScale(s.stores)).brighter(.45).formatHex())
+         .attr('stroke', '#1A6BFF').attr('stroke-width', .9);
+    }
+  }
+}
+
+function onStateLayerMove(evt) {
+  const [px, py] = d3.pointer(evt, mapG.node());
+  const pt = mercator.invert([px, py]);
+  const f  = featureAtPoint(pt);
+  setStateHighlight(f);
+  if (f) {
+    const s = stateForFeature(f);
+    if (s) { setTT('🏛️', s.name, s.stores); showTT(); posTT(evt); }
+    else hideTT();
+  } else {
+    hideTT();
+  }
+}
+
+function onStateLayerLeave() {
+  setStateHighlight(null);
+  hideTT();
+}
+
+function onStateLayerClick(evt) {
+  const [px, py] = d3.pointer(evt, mapG.node());
+  const pt = mercator.invert([px, py]);
+  const f  = featureAtPoint(pt);
+  if (!f) return;
+  evt.stopPropagation();
+  const s    = stateForFeature(f);
+  const fips = stateFipsForFeature(f);
   if (s) openStatePanel(s, fips);
 }
 
