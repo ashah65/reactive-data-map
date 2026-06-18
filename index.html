@@ -599,8 +599,10 @@ let LIVE = {};
 
 let svg, mapG, mercator, mercatorPath, zoomBehavior;
 let statesGeoLayer = null;
-let usStatesGeoRef = null;
-let hoveredFeature  = null;
+let usStatesGeoRef   = null;
+let hoveredFeature   = null;
+let virginiaRenderFeat = null; // CCW ring version — kept at z-back for rendering
+let virginiaGeoFeat    = null; // CW ring version — used only for geoContains accuracy
 let W, H;
 
 const PING_COLOR = '#FF6A00';
@@ -722,7 +724,7 @@ function initMap(worldAtlas, usStatesGeo) {
       mapG.attr('transform', evt.transform);
       currentK = evt.transform.k;
       // Scale dots so they stay a constant pixel size on screen (divide by k, not sqrt)
-      mapG.selectAll('.city-core').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
+      mapG.selectAll('.city-core, .city-hit').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
     });
 
   svg.call(zoomBehavior);
@@ -741,6 +743,12 @@ function initMap(worldAtlas, usStatesGeo) {
   // Country fills
   const countries = topojson.feature(worldAtlas, worldAtlas.objects.countries);
   const borders   = topojson.mesh(worldAtlas, worldAtlas.objects.countries, (a,b) => a!==b);
+
+  // Clip path from the US country outline — prevents Virginia's inverted fill from
+  // painting outside US territory and covering Canada/Mexico in the state layer.
+  const usFeature = countries.features.find(f => +f.id === 840);
+  defs.append('clipPath').attr('id', 'us-states-clip')
+    .append('path').attr('d', mercatorPath(usFeature));
 
   mapG.selectAll('.c-path')
     .data(countries.features)
@@ -763,20 +771,33 @@ function initMap(worldAtlas, usStatesGeo) {
     .attr('fill','none').attr('stroke','#C5DCF5').attr('stroke-width',.3);
 
   // ── US States layer — same Mercator projection, hidden until drill-down ──
-  statesGeoLayer = mapG.append('g').attr('class','us-states-layer').style('display','none');
+  statesGeoLayer = mapG.append('g').attr('class','us-states-layer')
+    .attr('clip-path', 'url(#us-states-clip)')
+    .style('display','none');
 
-  // Virginia (FIPS 51) has a CCW exterior ring, so D3+Mercator draws it as an inverted fill
-  // that covers the whole canvas. Fix: render Virginia FIRST so it sits at the back of the
-  // SVG z-stack — every other state renders on top and remains visible.
-  // For geoContains, put Virginia LAST so every other state is matched before Virginia's
-  // over-broad CCW ring gets a chance to match (Virginia then acts as a fallback for its own territory).
-  const virginiaFeat = usStatesGeo.features.find(
+  // Virginia has a CCW exterior ring so D3+Mercator draws it as an inverted fill.
+  // Rendering fix: put it first in the DOM (z-back) so all other states paint over it.
+  // geoContains fix: build a CW-corrected clone used ONLY for containment testing.
+  //   CW Virginia's geoContains correctly returns true only inside Virginia's actual borders,
+  //   so ocean, Chesapeake Bay, and other-state territory are all rejected precisely.
+  const rev = r => r.slice().reverse();
+  virginiaRenderFeat = usStatesGeo.features.find(
     f => String(f.id || '') === '51' || f.properties?.name === 'Virginia'
   );
-  const otherFeats = usStatesGeo.features.filter(f => f !== virginiaFeat);
+  if (virginiaRenderFeat) {
+    const g = JSON.parse(JSON.stringify(virginiaRenderFeat));
+    if (g.geometry.type === 'Polygon')
+      g.geometry.coordinates = g.geometry.coordinates.map(rev);
+    else if (g.geometry.type === 'MultiPolygon')
+      g.geometry.coordinates = g.geometry.coordinates.map(p => p.map(rev));
+    virginiaGeoFeat = g;
+  }
+  const otherFeats = usStatesGeo.features.filter(f => f !== virginiaRenderFeat);
 
-  const renderFeatures = virginiaFeat ? [virginiaFeat, ...otherFeats] : usStatesGeo.features;
-  usStatesGeoRef       = virginiaFeat ? [...otherFeats, virginiaFeat] : usStatesGeo.features;
+  // renderFeatures: Virginia first = rendered at z-back; other states cover its inverted fill
+  // usStatesGeoRef: CW Virginia last = acts as precise fallback only for Virginia's own territory
+  const renderFeatures = virginiaRenderFeat ? [virginiaRenderFeat, ...otherFeats] : usStatesGeo.features;
+  usStatesGeoRef       = virginiaGeoFeat    ? [...otherFeats, virginiaGeoFeat]    : usStatesGeo.features;
 
   statesGeoLayer.selectAll('.s-path')
     .data(renderFeatures)
@@ -842,8 +863,10 @@ function addCityPings(cities) {
       .attr('r', pingRadiusPx(city) / currentK)
       .attr('fill', PING_COLOR).attr('opacity',.92).attr('filter','url(#glow)');
 
-    // Hit area
-    g.append('circle').attr('r', 22).attr('fill','transparent')
+    // Hit area — same screen-pixel size as the core dot (scales with zoom via currentK)
+    g.append('circle').datum(city).attr('class','city-hit')
+      .attr('r', pingRadiusPx(city) / currentK)
+      .attr('fill','transparent')
       .on('mouseenter', evt => onCityEnter(evt, city))
       .on('mousemove',  onMouseMove)
       .on('mouseleave', onHoverEnd)
@@ -884,6 +907,12 @@ function enterUSView() {
     document.getElementById('back-btn').style.display       = 'flex';
     document.getElementById('us-banner').style.display      = 'block';
   }, 200);
+
+  // Give neighboring countries a warm neutral land tone after zoom finishes (no flash)
+  setTimeout(() => {
+    mapG.selectAll('.c-path:not([data-id="840"])')
+      .attr('fill', '#C8CCBA').attr('stroke', '#AAAAAA').attr('stroke-width', 0.5);
+  }, 800);
 }
 
 function exitUSView() {
@@ -891,8 +920,12 @@ function exitUSView() {
   statesGeoLayer.style('display', 'none');
   closeDetailPanel();
 
-  // Restore US country fill
-  mapG.select('.c-path[data-id="840"]').attr('fill', '#1A6BFF').attr('stroke', '#C5DCF5');
+  // Restore all country fills/strokes
+  mapG.selectAll('.c-path').attr('fill', d => {
+    if (+d.id === 840) return '#1A6BFF';
+    const c = DATA.countries[String(d.id)];
+    return c ? worldColorScale(c.activity) : '#D8E8F7';
+  }).attr('stroke', '#C5DCF5').attr('stroke-width', 0.4);
 
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-region="world"]').classList.add('active');
@@ -1021,7 +1054,12 @@ function onStateClick(evt, d) {
 // Container-level handlers — use geoContains to find the state under the cursor
 function featureAtPoint(pt) {
   if (!usStatesGeoRef) return null;
-  return usStatesGeoRef.find(f => d3.geoContains(f, pt)) || null;
+  const f = usStatesGeoRef.find(ff => d3.geoContains(ff, pt));
+  if (!f) return null;
+  // virginiaGeoFeat (CW clone) is used for accurate containment — map it back to the
+  // render version so object-identity checks in setStateHighlight still work.
+  if (f === virginiaGeoFeat) return virginiaRenderFeat;
+  return f;
 }
 
 function setStateHighlight(f) {
@@ -1362,7 +1400,7 @@ function startLiveUpdates() {
     LIVE.outOfStock = Math.max(0, LIVE.outOfStock + Math.round((Math.random()-.45)*5));
     document.getElementById('sb-temp').textContent = LIVE.tempAlerts;
     document.getElementById('sb-oos').textContent  = LIVE.outOfStock.toLocaleString();
-    if (mapG) mapG.selectAll('.city-core').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
+    if (mapG) mapG.selectAll('.city-core, .city-hit').attr('r', d => d ? pingRadiusPx(d) / currentK : 5);
   }, 2500);
 
   setInterval(() => {
